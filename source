@@ -2050,17 +2050,6 @@ do
 		uptimeParagraph:Set("Server Uptime: " .. formatted)
 	end)
 
-	element:Keybind({
-		Title = 'Toggle UI',
-		Key = UIToggle,
-		OnKeyChanged = function(newKey)
-			UIToggle = newKey
-		end,
-		CallBack = function()
-			ToggleUI()
-		end,
-	}, WINDOW.Settings.Pages.Theme.Container)
-
 end
 
 
