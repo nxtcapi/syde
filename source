@@ -14,6 +14,8 @@ Y8ooooo. 88    88 88'  `88 88ooood8
 made with 💓 by sellessence
 ]]
 
+print('bug fix 1')
+
 local inputservice =	game:GetService("InsertService")
 local tweenservice = 	game:GetService("TweenService")
 local https = 			game:GetService("HttpService")
@@ -233,7 +235,7 @@ function syde:MakeResizable(Dragger, Object, MinSize, Callback, LockAspectRatio)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isResizing = false
 			startPosition, startSize = nil, nil
-			tweenservice:Create(script.Parent.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 15,0, 15)}):Play()
+			tweenservice:Create(Library.lib.resize.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 15,0, 15)}):Play()
 		end
 	end
 
