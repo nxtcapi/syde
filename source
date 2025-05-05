@@ -14,8 +14,6 @@ Y8ooooo. 88    88 88'  `88 88ooood8
 made with 💓 by sellessence
 ]]
 
-print('bug fix 2')
-
 local inputservice =	game:GetService("InsertService")
 local tweenservice = 	game:GetService("TweenService")
 local https = 			game:GetService("HttpService")
@@ -27,14 +25,15 @@ local player =          game:GetService('Players')
 local coregui =         game:GetService("CoreGui")
 local textservice =     game:GetService('TextService')
 
+local sharedModule = {}
+local resizing = false
+
 local Loader =          game:GetObjects("rbxassetid://110221114597158")[1]
 local Library =         game:GetObjects("rbxassetid://123800669522471")[1]
 
-local sharedModule = {}
-
 Library.Enabled = false
-
 local loaded = false
+
 local syde = {
 
 	theme = {
@@ -198,6 +197,7 @@ function syde:MakeResizable(Dragger, Object, MinSize, Callback, LockAspectRatio)
 	local function onInputBegan(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isResizing = true
+			resizing = true
 			startPosition = userInput:GetMouseLocation()
 			startSize = Object.AbsoluteSize
 			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 13,0, 13)}):Play()
@@ -234,6 +234,7 @@ function syde:MakeResizable(Dragger, Object, MinSize, Callback, LockAspectRatio)
 	local function onInputEnded(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isResizing = false
+			resizing = false
 			startPosition, startSize = nil, nil
 			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 15,0, 15)}):Play()
 		end
@@ -300,6 +301,8 @@ function syde:removeLoadTween(object)
 	end
 end
 
+
+
 function syde:updateLayout(container, spacing)
 	spacing = spacing or 5
 	local yOffset = 0
@@ -311,20 +314,25 @@ function syde:updateLayout(container, spacing)
 		end
 	end
 
-	for _, child in ipairs(container:GetChildren()) do
-		if (child:IsA("Frame") or child:IsA("ImageLabel") or child:IsA("TextLabel") or child:IsA("TextButton")) and child.Visible then
-			--child.Size = UDim2.new(1, -10, 0, child.Size.Y.Offset) -- Full width, fixed height
-			-- child.Position = UDim2.new(0, 0, 0, yOffset)
-			tweenservice:Create(child, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Position = UDim2.new(0, 0, 0, yOffset)}):Play()
-			yOffset = yOffset + child.AbsoluteSize.Y + spacing
+	if resizing == false then
+		for _, child in ipairs(container:GetChildren()) do
+			if (child:IsA("Frame") or child:IsA("ImageLabel") or child:IsA("TextLabel") or child:IsA("TextButton")) and child.Visible then
+				--child.Size = UDim2.new(1, -10, 0, child.Size.Y.Offset) -- Full width, fixed height
+				-- child.Position = UDim2.new(0, 0, 0, yOffset)
+				tweenservice:Create(child, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Position = UDim2.new(0, 0, 0, yOffset)}):Play()
+				yOffset = yOffset + child.AbsoluteSize.Y + spacing
+			end
 		end
 	end
+
 
 	container.CanvasSize = UDim2.new(0, 0, 0, yOffset)
 end
 
+local dragSpeed = 0.6
+local LockToScreen = false
 
-function syde:AddDrag(Object, Main, speed, ConstrainToParent)
+function syde:AddDrag(Object, Main, ConstrainToParent)
 	assert(typeof(Object) == "Instance" and Object:IsA("GuiObject"), "[AddDrag] Object must be a GuiObject")
 	assert(typeof(Main) == "Instance" and Main:IsA("GuiObject"), "[AddDrag] Main must be a GuiObject")
 
@@ -332,20 +340,27 @@ function syde:AddDrag(Object, Main, speed, ConstrainToParent)
 	local tweenService = game:GetService("TweenService")
 
 	local dragging, dragInput, startMousePos, startFramePos = false, nil, nil, nil
-	speed = speed or 0.15  -- Default smoothness speed
 
 	local function getConstrainedPosition(newPos)
-		if not ConstrainToParent or not Main.Parent or not Main.Parent:IsA("GuiObject") then
+		local minX, minY, maxX, maxY
+
+		if ConstrainToParent and Main.Parent and Main.Parent:IsA("GuiObject") then
+			local parentSize = Main.Parent.AbsoluteSize
+			local frameSize = Main.AbsoluteSize
+
+			minX, maxX = 0, parentSize.X - frameSize.X
+			minY, maxY = 0, parentSize.Y - frameSize.Y
+
+		elseif LockToScreen then
+			local screenSize = workspace.CurrentCamera.ViewportSize
+			local frameSize = Main.AbsoluteSize
+
+			minX, maxX = 0, screenSize.X - frameSize.X
+			minY, maxY = 0, screenSize.Y - frameSize.Y
+
+		else
 			return newPos
 		end
-
-		local parentSize = Main.Parent.AbsoluteSize
-		local frameSize = Main.AbsoluteSize
-
-		local minX = 0
-		local maxX = parentSize.X - frameSize.X
-		local minY = 0
-		local maxY = parentSize.Y - frameSize.Y
 
 		local constrainedX = math.clamp(newPos.X.Offset, minX, maxX)
 		local constrainedY = math.clamp(newPos.Y.Offset, minY, maxY)
@@ -371,7 +386,7 @@ function syde:AddDrag(Object, Main, speed, ConstrainToParent)
 				startFramePos.Y.Scale, startFramePos.Y.Offset + delta.Y
 			)
 
-			Main:TweenPosition(getConstrainedPosition(newPos), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, speed, true)
+			Main:TweenPosition(getConstrainedPosition(newPos), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, dragSpeed, true)
 		end
 	end)
 
@@ -404,6 +419,63 @@ for _, temp in ipairs(Library.Notification:GetChildren()) do
 		temp.Visible = false
 	end
 end 
+
+local activeModals = 0
+
+function syde:Modal(Modal)
+	task.spawn(function()
+		local ModalData = {
+			Title = Modal.Title;
+			Content = Modal.Content;
+			ConfirmCallBack = Modal.ConfimCallBack
+		}
+
+		local ModalInstance = Library.lib.Modal:Clone()
+		ModalInstance.Visible = true
+		ModalInstance.Parent = Library.lib
+		ModalInstance.Title.Text = ModalData.Title
+		ModalInstance.Content.Text = ModalData.Content
+		ModalInstance.Content.Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)
+		ModalInstance.Size = UDim2.new(0, ModalInstance.Size.X.Offset, 0, ModalInstance.Content.TextBounds.Y + 150)
+
+		activeModals += 1
+
+		if activeModals == 1 then
+			Library.lib.dim.Visible = true
+			tweenservice:Create(Library.lib.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {
+				BackgroundTransparency = 0.3
+			}):Play()
+		end
+
+		ModalInstance.Buttons.Confirm.MouseButton1Click:Connect(function()
+			if typeof(ModalData.ConfirmCallBack) == "function" then
+				ModalData.ConfirmCallBack()
+			end
+
+			ModalInstance:Destroy()
+			activeModals -= 1
+
+			if activeModals == 0 then
+				tweenservice:Create(Library.lib.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {
+					BackgroundTransparency = 1
+				}):Play()
+				task.wait(0.7)
+				Library.lib.dim.Visible = false
+			end
+		end)
+
+		ModalInstance.Buttons.Cancel.MouseButton1Click:Connect(function()
+			ModalInstance:Destroy()
+			activeModals -= 1
+			tweenservice:Create(Library.lib.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {
+				BackgroundTransparency = 1
+			}):Play()
+			task.wait(0.7)
+			Library.lib.dim.Visible = false
+		end)
+
+	end)
+end
 
 
 function syde:Notify(Notification)
@@ -843,11 +915,31 @@ syde:HidePlaceHolder(TABS, 'Tb')
 syde:HidePlaceHolder(PAGES, 'Page')
 
 
+
+
+
+
+
+
+
+
+
 	--[[
            __|  __| __ __| __ __| _ _|   \ |   __|   __|
          \__ \  _|     |      |     |   .  |  (_ | \__ \
          ____/ ___|   _|     _|   ___| _|\_| \___| ____/						
 	]]
+
+
+
+
+
+
+
+
+
+
+
 do
 	local SettingsElements = {
 		Connections = {};
@@ -1960,13 +2052,283 @@ do
 
 		end
 
+		function element:Toggle(Toggle, Parent)
+			local ToggleData = {
+				Title = Toggle.Title or "Temp Toggle";
+				Desc = Toggle.Description or "";
+				V = Toggle.Value or false;
+				Config = Toggle.Config or false;
+				CallBack = Toggle.CallBack
+			}
+
+			local toggle = Library.Settings.Toggle:Clone()
+			toggle.Visible = true
+			toggle.Parent = Parent
+			toggle.Title.Text = ToggleData.Title
+			toggle.Name = ToggleData.Title
+
+			local toggleConfiguration = UI.Render.ToggleConfiguration:Clone()
+			toggleConfiguration.Parent = UI.Render
+			toggleConfiguration.Visible = false
+
+			toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
+			tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
+
+			toggleConfiguration.BackgroundTransparency = 1
+			toggleConfiguration.Container.KeyBind.Title.TextTransparency = 1
+			toggleConfiguration.Container.KeyBind.Bind.BackgroundTransparency = 1
+			toggleConfiguration.Container.KeyBind.Bind.v.TextTransparency = 1
+			toggleConfiguration.Container.Clear.Title.TextTransparency = 1
+			toggleConfiguration.Container.Clear.clear.ImageLabel.ImageTransparency = 1
+			toggleConfiguration.Size = UDim2.new(0, 75,0, 53)
+
+			if not ToggleData.Config then
+				toggle.Configure:Destroy()
+			end
+
+			local toggleTween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
+			local fadeTween = TweenInfo.new(0.57, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+
+			local function UpdateToggleUI(state)
+				local targetColor = state and syde.theme.HitBox or Color3.fromRGB(20, 20, 20)
+				local strokeTransparency = state and 1 or 0
+				local checkTransparency = state and 0 or 1
+				local gradientTransparency = state and 0 or 1
+
+				tweenservice:Create(toggle.tog, toggleTween, { BackgroundColor3 = targetColor }):Play()
+				tweenservice:Create(toggle.tog.UIStroke, toggleTween, { Transparency = strokeTransparency }):Play()
+				tweenservice:Create(toggle.tog.check, toggleTween, { ImageTransparency = checkTransparency }):Play()
+				tweenservice:Create(toggle.tog.gradfr, fadeTween, { BackgroundTransparency = gradientTransparency }):Play()
+			end
+
+			UpdateToggleUI(ToggleData.V)
+
+			toggle.interact.MouseButton1Click:Connect(function()
+				ToggleData.V = not ToggleData.V
+				UpdateToggleUI(ToggleData.V)
+
+				local success, errorMsg = pcall(function()
+					if ToggleData.CallBack then
+						ToggleData.CallBack(ToggleData.V)
+					end
+				end)
+
+				if not success then
+					warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+				end
+			end)
+
+			--[DESC]
+			local descLabel = toggle:FindFirstChild("Desc")
+
+			if descLabel then
+				if ToggleData.Desc and ToggleData.Desc ~= "" then
+					descLabel.Text = ToggleData.Desc
+					descLabel.Visible = true
+					descLabel.TextWrapped = true
+
+					local function updateSize()
+						local textSize = textservice:GetTextSize(
+							descLabel.Text,
+							descLabel.TextSize,
+							descLabel.Font,
+							Vector2.new(descLabel.AbsoluteSize.X, math.huge)
+						)
+
+						local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
+						local newButtonSize = UDim2.new(toggle.Size.X.Scale, toggle.Size.X.Offset, 0, toggle.Title.Size.Y.Offset + textSize.Y + 5) -- Adding extra padding
+
+						local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
+						descTween:Play()
+
+						local ToggleTween = tweenservice:Create(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
+						ToggleTween:Play()
+					end
+
+					updateSize()
+
+					descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+				else
+					descLabel.Visible = false
+				end
+			end
+
+
+			-- [CONFIGURATIPON]
+			if ToggleData.Config then
+
+				local State = false
+
+				local enterTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
+				local leaveTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
+
+				toggle.Configure.MouseEnter:Connect(function()
+					tweenservice:Create(toggle.Configure, enterTween, { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+				end)
+
+				toggle.Configure.MouseLeave:Connect(function()
+					tweenservice:Create(toggle.Configure, leaveTween, { ImageColor3 = Color3.fromRGB(104, 104, 104) }):Play()
+				end)
+
+				local function ToggleConfigOpen()
+					toggleConfiguration.Visible = true
+					State = true
+
+					tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 0 }):Play()
+					tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 186,0, 85) }):Play()
+
+				end
+
+				local function ToggleConfigClose()
+					State = false
+
+					tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 1 }):Play()
+					tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 75,0, 53) }):Play()
+
+					task.wait(0.5)
+
+					toggleConfiguration.Visible = false
+
+				end
+
+				local TogService
+				local heldKeys = {} 
+				local debounce1 = false
+
+				local function ToggleConfig()
+					if debounce1 then return end
+					debounce1 = true
+
+					if not toggleConfiguration.Visible then
+						TogService = runservice.RenderStepped:Connect(function()
+							toggleConfiguration:TweenPosition(UDim2.new(0,toggle.Configure.AbsolutePosition.X - 190,0,toggle.Configure.AbsolutePosition.Y + toggle.Configure.AbsoluteSize.Y + 65), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+							if not toggleConfiguration.Visible then
+								TogService:Disconnect()
+							end
+						end)
+						ToggleConfigOpen()
+					else
+						if TogService then TogService:Disconnect() end
+						ToggleConfigClose()
+					end
+
+					task.delay(0.4, function()
+						debounce1 = false
+					end)
+				end
+
+				toggle.Configure.MouseButton1Click:Connect(function()
+					ToggleConfig()
+				end)
+
+				local function ResizeBindFrame()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
+				end
+
+				local function setKeybind(key)
+					if not key then
+						toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
+						ResizeBindFrame()
+						ToggleData.Keybind = nil
+					else
+						ToggleData.Keybind = key
+						ToggleData.KeybindReady = false
+
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+						toggleConfiguration.Container.KeyBind.Bind.v.Text = key.Name
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(1, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+						ResizeBindFrame()
+
+						task.delay(0.5, function()
+							ToggleData.KeybindReady = true
+						end)
+					end
+				end
+
+				toggleConfiguration.Container.KeyBind.Interact.MouseButton1Click:Connect(function()
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+					task.wait(0.2)
+					toggleConfiguration.Container.KeyBind.Bind.v.Text = "..."
+					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+					ResizeBindFrame()
+
+
+					local connection
+					connection = userinput.InputBegan:Connect(function(input, processed)
+						if not processed and input.UserInputType == Enum.UserInputType.Keyboard then
+							setKeybind(input.KeyCode)
+							connection:Disconnect()
+						end
+					end)
+				end)
+
+				userinput.InputBegan:Connect(function(input, processed)
+					if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
+						ToggleData.V = not ToggleData.V
+						UpdateToggleUI(ToggleData.V)
+
+						if ToggleData.CallBack then
+							local success, errorMsg = pcall(function()
+								ToggleData.CallBack(ToggleData.V)
+							end)
+							if not success then
+								warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+							end
+						end
+					end
+				end)
+
+				local debounce2 = false
+
+				toggleConfiguration.Container.Clear.Interact.MouseButton1Click:Connect(function()
+					if debounce2 then return end
+					debounce2 = true
+
+					setKeybind(nil)
+
+					local function blink()
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 13 }):Play()
+						task.wait(0.2)
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = -13 }):Play()
+						task.wait(0.2)
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
+					end
+
+					blink()
+
+					task.delay(2, function()
+						debounce2 = false
+					end)
+				end)
+
+				toggleConfiguration.Container.Clear.MouseEnter:Connect(function()
+					tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0.9 }):Play()
+				end)
+
+				toggleConfiguration.Container.Clear.MouseLeave:Connect(function()
+					tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+				end)
+
+			end
+		end
+
 		return element
 
 	end
 
 	local element = SettingsElements:GetSettingsElements()
 
-	element:Section('Accent', WINDOW.Settings.Pages.Theme.Container, '0')
+	element:Section('Theme', WINDOW.Settings.Pages.Theme.Container, '0')
 
 	element:ColorPicker({
 		Title = 'Accent',
@@ -1977,18 +2339,6 @@ do
 		end,
 	}, WINDOW.Settings.Pages.Theme.Container)
 
-	element:Keybind({
-		Title = 'Toggle UI',
-		Key = UIToggle,
-		OnKeyChanged = function(newKey)
-			UIToggle = newKey
-		end,
-		CallBack = function()
-			ToggleUI()
-		end,
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-	element:Section('Hitbox', WINDOW.Settings.Pages.Theme.Container, '0')
 
 	element:ColorPicker({
 		Title = 'HitBox',
@@ -2001,11 +2351,25 @@ do
 		end,
 	}, WINDOW.Settings.Pages.Theme.Container)
 
+	element:Section('Other', WINDOW.Settings.Pages.Theme.Container, '0')
+
+	element:Keybind({
+		Title = 'Toggle UI',
+		Key = UIToggle,
+		OnKeyChanged = function(newKey)
+			UIToggle = newKey
+		end,
+		CallBack = function()
+			ToggleUI()
+		end,
+	}, WINDOW.Settings.Pages.Theme.Container)
+
+
 	element:CreateSlider({
 		Title = 'Modifiers',
 		Sliders = {
 			{
-				Title = 'Slider Density',
+				Title = 'Glow Density',
 				Range = {0, 1},
 				Increment = 0.1,
 				StarterValue = WINDOW.Shadow.ImageLabel.ImageTransparency,
@@ -2013,8 +2377,27 @@ do
 					tweenservice:Create(WINDOW.Shadow.ImageLabel, TweenInfo.new(0.65, Enum.EasingStyle.Exponential), {ImageTransparency = v}):Play()
 				end,
 			},
+			{
+				Title = 'Drag Smoothness',
+				Range = {0, 1},
+				Increment = 0.1,
+				StarterValue = dragSpeed,
+				CallBack = function(v)
+					dragSpeed = v
+					print(dragSpeed)
+				end,
+			},
 		}
 	}, WINDOW.Settings.Pages.Theme.Container)
+
+	element:Toggle({
+		Title = 'LockToScreen?',
+		Value = LockToScreen,
+		CallBack = function (v)
+			LockToScreen = v
+		end
+	}, WINDOW.Settings.Pages.Theme.Container)
+
 
 	element:Paragraph({
 		Title = 'Coming Soon',
@@ -2029,7 +2412,7 @@ do
 	local startTime = tick()
 
 	local uptimeParagraph = element:Paragraph({
-		Title = 'Server Uptime',
+		Title = 'Session UpTime',
 		Content = 'Calculating...'
 	}, WINDOW.Settings.Pages.Info.Container)
 
@@ -2052,10 +2435,12 @@ do
 		uptimeParagraph:Set("Server Uptime: " .. formatted)
 	end)
 
+
 end
 
 
 --[INITIALIZATION]
+
 function syde:Init(library)
 
 	UI.Enabled = true
@@ -2071,7 +2456,7 @@ function syde:Init(library)
 	TOPBAR.Title.Sub.Text = Data.SubText
 
 	-- [Setup Dragging & Resizing]
-	syde:AddDrag(TOPBAR, WINDOW, 0.7, true)
+	syde:AddDrag(TOPBAR, WINDOW, true)
 	syde:MakeResizable(WINDOW.resize, WINDOW, Vector2.new(654, 428))
 
 	-- [Initial Transparency Setup]
@@ -2178,6 +2563,17 @@ function syde:Init(library)
 
 	WINDOW.Top.UHolder.Util.Mini.interact.MouseButton1Click:Connect(function()
 		CloseUI()
+	end)
+
+	WINDOW.Top.UHolder.Util.Close.interact.MouseButton1Click:Connect(function()
+		syde:Modal({
+			Title = 'Close This UI?',
+			Content = 'Are you sure you want to close this ui?',
+			ConfimCallBack = function()
+				task.wait(1)
+				Library:Destroy()
+			end,
+		})
 	end)
 
 	local tabBlock = WINDOW.Settings.TabBlock
@@ -4184,6 +4580,65 @@ function syde:Init(library)
 			Para.Content:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
 		end
 
+		function InitElement:Rate(Rate)
+			local RateData = {
+				Title = Rate.Title;
+				WebHook = Rate.WebHook;
+			}
+
+			local RateBlock = PAGES.Page.Rate:Clone()
+			RateBlock.Visible = true
+			RateBlock.Parent = Page
+			RateBlock.Title.Text = RateData.Title
+
+			local starsFrame = RateBlock.stars
+			local stars = {}
+
+			for i = 1, 5 do
+				table.insert(stars, starsFrame:FindFirstChild(i))
+			end
+
+			local function highlightStars(hoveredIndex, litCount)
+				for i, star in ipairs(stars) do
+					if i <= litCount then
+						tweenservice:Create(star, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {ImageColor3 = Color3.fromRGB(255, 255, 0)}):Play()
+						tweenservice:Create(star.glow, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {ImageTransparency = 0.7}):Play()
+					else
+						tweenservice:Create(star, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {ImageColor3 = Color3.fromRGB(25, 25, 25)}):Play()
+						tweenservice:Create(star.glow, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+					end
+
+					-- Scale only the hovered star
+					if i == hoveredIndex then
+						tweenservice:Create(star.UIScale, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {Scale = 1.2}):Play()
+					else
+						tweenservice:Create(star.UIScale, TweenInfo.new(0.43, Enum.EasingStyle.Exponential), {Scale = 1}):Play()
+					end
+				end
+			end
+
+			local selected = 0
+
+			for i, star in ipairs(stars) do
+				star.MouseEnter:Connect(function()
+					highlightStars(i, i)
+				end)
+
+				star.MouseLeave:Connect(function()
+					highlightStars(0, selected ~= 0 and selected or 0)
+				end)
+
+				star.MouseButton1Click:Connect(function()
+					selected = i
+					tweenservice:Create(star.glow.UIScale, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Scale = 1.3}):Play()
+					task.wait(0.35)
+					tweenservice:Create(star.glow.UIScale, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {Scale = 1}):Play()
+					print(selected)
+				end)
+			end
+
+		end
+
 		return InitElement
 
 	end
@@ -4191,7 +4646,6 @@ function syde:Init(library)
 	return ldata
 
 end
-
 return syde
 
 
