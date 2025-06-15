@@ -6,7 +6,7 @@
 .d8888b. dP    dP .d888b88 .d8888b. 
 Y8ooooo. 88    88 88'  `88 88ooood8 
       88 88.  .88 88.  .88 88.  ... 
-`88888P' `8888P88 `88888P8 `88888P' beta.
+`88888P' `8888P88 `88888P8 `88888P' alpha.
               .88                   
           d8888P                    
 
@@ -39,7 +39,7 @@ local syde = {
 	theme = {
 		['Accent'] = Color3.fromRGB(255, 255, 255);
 		['HitBox'] = Color3.fromRGB(255, 255, 255);
-		['Glow']   = Color3.fromRGB(0, 0, 0);
+		['DropShadow']   = Color3.fromRGB(0, 0, 0);
 
 	};
 	Connections = {};
@@ -420,7 +420,7 @@ for _, temp in ipairs(Library.Notification:GetChildren()) do
 	end
 end 
 
-local activeModals = 0
+local activeModals = 0 -- track how many modals are currently open
 
 function syde:Modal(Modal)
 	task.spawn(function()
@@ -435,10 +435,63 @@ function syde:Modal(Modal)
 		ModalInstance.Parent = Library.lib
 		ModalInstance.Title.Text = ModalData.Title
 		ModalInstance.Content.Text = ModalData.Content
-		ModalInstance.Content.Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)
-		ModalInstance.Size = UDim2.new(0, ModalInstance.Size.X.Offset, 0, ModalInstance.Content.TextBounds.Y + 150)
+		--	ModalInstance.Content.Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)
+		ModalInstance.Size = UDim2.new(0, 135,0, 144)
+		ModalInstance.BackgroundTransparency = 1
+		ModalInstance.Title.TextTransparency = 1
+		ModalInstance.Content.TextTransparency = 1
 
-		activeModals += 1
+		ModalInstance.Buttons.Confirm.BackgroundTransparency = 1
+		ModalInstance.Buttons.Confirm.TextLabel.TextTransparency = 1
+		ModalInstance.Buttons.Confirm.UIStroke.Transparency = 1
+
+		ModalInstance.Buttons.Cancel.BackgroundTransparency = 1
+		ModalInstance.Buttons.Cancel.TextLabel.TextTransparency = 1
+		ModalInstance.Buttons.Cancel.UIStroke.Transparency = 1
+
+		local function openModal()
+			print(activeModals)
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.55, Enum.EasingStyle.Quint), {Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)}):Play()
+			activeModals += 1
+			ModalInstance.Size = UDim2.new(0, ModalInstance.Size.X.Offset, 0, ModalInstance.Content.TextBounds.Y + 130)
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 455,0,  ModalInstance.Content.TextBounds.Y + 130)}):Play()
+
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Title, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+
+			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+
+			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+
+		end
+		openModal()
+
+		local function closeModal()
+			activeModals -= 1
+			ModalInstance.Buttons.Cancel.Interactable = false
+			ModalInstance.Buttons.Confirm.Interactable = false
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 219,0, 147)}):Play()
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Title, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+
+			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+
+			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			task.wait(0.45)
+			ModalInstance:Destroy()
+		end
+
+
 
 		if activeModals == 1 then
 			Library.lib.dim.Visible = true
@@ -452,8 +505,8 @@ function syde:Modal(Modal)
 				ModalData.ConfirmCallBack()
 			end
 
-			ModalInstance:Destroy()
-			activeModals -= 1
+
+			closeModal()
 
 			if activeModals == 0 then
 				tweenservice:Create(Library.lib.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {
@@ -465,8 +518,7 @@ function syde:Modal(Modal)
 		end)
 
 		ModalInstance.Buttons.Cancel.MouseButton1Click:Connect(function()
-			ModalInstance:Destroy()
-			activeModals -= 1
+			closeModal()
 			tweenservice:Create(Library.lib.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {
 				BackgroundTransparency = 1
 			}):Play()
@@ -553,7 +605,6 @@ function syde:Notify(Notification)
 end
 
 --[LOADER INIALIZE]
--- just a bunch of task waits for now (feel free to skip)
 do
 
 	function syde:Load(Config)
@@ -794,9 +845,189 @@ do
 		end
 
 		local function load()
-			TweenWorkLabel(1,'rbxassetid://136002400178503', 'Securing UI...')
-			TweenWorkLabel(1,'rbxassetid://126745165401124', 'Loading Files..')
+			TweenWorkLabel(1,'rbxassetid://136002400178503', 'Verifying Configuration...')
+
+			if Config.ConfigurationSaving and Config.ConfigurationSaving.Enabled then
+				local folderName = Config.ConfigurationSaving.FolderName or "SydeSec"
+				local fileName = Config.ConfigurationSaving.FileName or "default_config"
+				local fullPath = folderName .. "/" .. fileName .. ".lua"
+
+				if isfolder and not isfolder(folderName) then
+					local success, err = pcall(function()
+						makefolder(folderName)
+					end)
+					if not success then
+						warn("[SYDE] Failed to create folder:", err)
+					end
+				end
+
+				local success, err = pcall(function()
+					if isfile and not isfile(fullPath) then
+						writefile(fullPath, "-- Protected UI Configuration")
+					else
+						local content = readfile(fullPath)
+						if not content:find("Protected UI") then
+							warn("[SYDE] UI integrity failed — possible tampering detected.")
+							if LOADER then LOADER:Destroy() end
+							error("Blocked execution due to tampering.")
+						end
+					end
+				end)
+
+				if not success then
+					warn("[SYDE] File write/read blocked or failed:", err)
+				end
+			end
+
+			TweenWorkLabel(1,'rbxassetid://105810189969774', 'Cleaning Things Up...')
+			local UI_TAG = "SYDEUILoader"
+			local MARKER_NAME = "SYDEUIDetector"
+			local INTERNAL_UUID = ("SYDE-" .. tostring(game.JobId):gsub("-", "") .. tostring(tick())):gsub("%.", "")
+			local PROTECTION_EVENT = Instance.new("BindableEvent")
+			local HttpService = game:GetService("HttpService")
+
+			-- Cleanup old UI 
+			local function deepCleanup()
+				for _, v in ipairs(coregui:GetChildren()) do
+					if v:IsA("ScreenGui") and v:FindFirstChild(MARKER_NAME) then
+						pcall(function()
+							v:Destroy()
+						end)
+					end
+				end
+			end
+			deepCleanup()
+
+			-- Load the Library
+			local successLibrary, Library = pcall(function()
+				return Library -- Replace with actual GetObjects if needed
+			end)
+
+			if not successLibrary or not Library then
+				warn("[SYDE] Failed to load Library.")
+				return
+			end
+
+			Library.Name = UI_TAG
+			Library.ResetOnSpawn = false
+
+			local marker = Instance.new("StringValue")
+			marker.Name = MARKER_NAME
+			marker.Value = INTERNAL_UUID
+			marker.Parent = Library
+
+			pcall(function()
+				Library.Parent = coregui
+			end)
+
+			-- Ensure Library stays in CoreGui
+			task.spawn(function()
+				while Library and Library.Parent do
+					task.wait(1)
+					if Library.Parent ~= coregui then
+						warn("[SYDE] UI moved. Restoring...")
+						pcall(function()
+							Library.Parent = coregui
+						end)
+					end
+				end
+			end)
+
+			-- Reinject if removed
+			task.spawn(function()
+				while Library and Library.Parent do
+					task.wait(2)
+				end
+
+				warn("[SYDE] UI removed. Reinjection in progress...")
+				local success, lib = pcall(function()
+					return Library -- Replace with GetObjects if needed
+				end)
+				if success and lib then
+					lib.Name = UI_TAG
+					local m = Instance.new("StringValue")
+					m.Name = MARKER_NAME
+					m.Value = INTERNAL_UUID
+					m.Parent = lib
+					lib.ResetOnSpawn = false
+					pcall(function()
+						lib.Parent = coregui
+					end)
+				end
+			end)
+
 			TweenWorkLabel(1,'rbxassetid://108012241529487', 'Checking For Discord...')
+
+			if Config.AutoJoinDiscord and Config.AutoJoinDiscord.Enabled then
+				local discordConfig = Config.AutoJoinDiscord
+				local rootFolder = Config.ConfigurationSaving and Config.ConfigurationSaving.FolderName or "SydeSec"
+				local discordFolder = rootFolder .. "/DiscordInvites"
+				local inviteCode = discordConfig.Invite
+				local inviteFilePath = discordFolder .. "/" .. inviteCode .. ".txt"
+
+				warn("[SYDE] Discord AutoJoin enabled. Preparing to send invite:", inviteCode)
+
+				-- Ensure folder exists
+				if isfolder and not isfolder(discordFolder) then
+					local folderSuccess, folderErr = pcall(function()
+						makefolder(discordFolder)
+					end)
+					if folderSuccess then
+						print("[SydeUI] Created DiscordInvites folder at:", discordFolder)
+					else
+						warn("[SydeUI] Failed to create DiscordInvites folder:", folderErr)
+					end
+				end
+
+				local shouldPrompt = true
+				if isfile and discordConfig.RememberJoins and isfile(inviteFilePath) then
+					print("[SYDE] Discord invite '" .. inviteCode .. "' already joined. Skipping prompt.")
+					shouldPrompt = false
+				end
+
+				if shouldPrompt then
+					if request then
+						local reqSuccess, reqErr = pcall(function()
+							request({
+								Url = "http://127.0.0.1:6463/rpc?v=1",
+								Method = "POST",
+								Headers = {
+									["Content-Type"] = "application/json",
+									["Origin"] = "https://discord.com"
+								},
+								Body = https:JSONEncode({
+									cmd = "INVITE_BROWSER",
+									nonce = https:GenerateGUID(false),
+									args = {
+										code = inviteCode
+									}
+								})
+							})
+						end)
+
+						if reqSuccess then
+							print("[SydeUI] Discord invite sent successfully to:", inviteCode)
+						else
+							warn("[SydeUI] Failed to send Discord invite:", reqErr)
+						end
+					else
+						warn("[SydeUI] Request function not available — cannot send Discord invite.")
+					end
+
+					if discordConfig.RememberJoins then
+						local writeSuccess, writeErr = pcall(function()
+							writefile(inviteFilePath, "Joined Discord via invite '" .. inviteCode .. "' at " .. os.date())
+						end)
+
+						if writeSuccess then
+							print("[SydeUI] Logged Discord invite join for:", inviteCode)
+						else
+							warn("[SydeUI] Failed to write join log for invite:", writeErr)
+						end
+					end
+				end
+			end
+
 			TweenWorkLabel(1,'rbxassetid://136405833725573', 'Loading UI...')
 			task.wait(1)
 			tweenservice:Create( LOADER.load.Salt, TweenInfo.new(0.65, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 146,0, 25)}):Play()
@@ -818,16 +1049,18 @@ do
 		initLoader()
 		task.wait(0.08)
 		load()
-
 		task.wait(2)
 
 		Library.Enabled = true
+
 
 		LOADER:Destroy()
 
 	end
 
 end
+
+
 
 -- [UI SETUP]
 local UI = Library
@@ -838,7 +1071,6 @@ local PAGES = WINDOW.Pages
 local settingsOpen = false
 local UIClosed = false
 local UIToggle = Enum.KeyCode.RightShift
-UI.Parent = coregui
 
 function CloseUI()
 	PAGES.Visible = false
@@ -899,1544 +1131,23 @@ function ToggleUI()
 	if BOUNCE then return end
 	BOUNCE = true
 
-	if UIClosed then
-		OpenUI()
-	else
-		CloseUI()
+	if Library and Library.Parent == coregui then
+		if UIClosed then
+			OpenUI()
+		else
+			CloseUI()
+		end
 	end
 
-	task.delay(1, function()
+	task.delay(1.5, function()
 		BOUNCE = false
 	end)
 end
 
+
 -- [Remove PlaceHolders]
 syde:HidePlaceHolder(TABS, 'Tb')
 syde:HidePlaceHolder(PAGES, 'Page')
-
-
-
-
-
-
-
-
-
-
-
-	--[[
-           __|  __| __ __| __ __| _ _|   \ |   __|   __|
-         \__ \  _|     |      |     |   .  |  (_ | \__ \
-         ____/ ___|   _|     _|   ___| _|\_| \___| ____/						
-	]]
-
-
-
-
-
-
-
-
-
-
-
-do
-	local SettingsElements = {
-		Connections = {};
-		Comms = Instance.new('BindableEvent');
-	}
-
-	function SettingsElements:AddConnection(Type, Callback)
-		if typeof(Type) ~= "RBXScriptSignal" then
-			error("[AddConnection] Invalid Type: Expected RBXScriptSignal, got " .. typeof(Type))
-		end
-		if typeof(Callback) ~= "function" then
-			error("[AddConnection] Invalid Callback: Expected function, got " .. typeof(Callback))
-		end
-
-		local Connection = Type:Connect(Callback)
-		local ConnectionData = { Connection = Connection }
-
-		SettingsElements.Connections = SettingsElements.Connections or {}
-		table.insert(SettingsElements.Connections, ConnectionData)
-
-		local function Disconnect()
-			if Connection.Connected then
-				Connection:Disconnect()
-			end
-
-			for i = #SettingsElements.Connections, 1, -1 do
-				if SettingsElements.Connections[i] == ConnectionData then
-					table.remove(SettingsElements.Connections, i)
-					break
-				end
-			end
-		end
-
-		task.spawn(function()
-			task.wait(10)
-			for i = #SettingsElements.Connections, 1, -1 do
-				if not SettingsElements.Connections[i].Connection.Connected then
-					table.remove(SettingsElements.Connections, i)
-				end
-			end
-		end)
-
-		return Connection, Disconnect
-	end
-
-	function SettingsElements:GetSettingsElements()
-		local element = {}
-
-		function element:CreateButton(Button, Parent)
-			local ButtonData = {
-				Title = Button.Title or "Temp Button";
-				CallBack = Button.CallBack;
-				Desc = Button.Description or "";
-				Type = Button.Type or 'Default';
-				HoldTime = Button.HoldTime or 3;
-			}
-
-			local button = Library.Settings.Button:Clone()
-			button.Visible = true
-			button.Parent = Parent
-			button.Title.Text = Button.Title
-			button.Name = ButtonData.Title
-			button.Title.Size = UDim2.new(0, button.Title.TextBounds.X + 15,0, 35)
-
-
-			local fOTween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
-			local fITween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
-
-			if ButtonData.Type == 'Default' then
-				-- UI Stroke effect on button press
-
-				button.interact.MouseButton1Down:Connect(function()
-					tweenservice:Create(button.UIStroke, fOTween, { Transparency = 1 }):Play()
-					tweenservice:Create(button.ImageLabel, fOTween, { ImageTransparency = 1 }):Play()
-					tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
-				end)
-
-				button.interact.MouseButton1Up:Connect(function()
-					tweenservice:Create(button.UIStroke, fITween, { Transparency = 0 }):Play()
-					tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
-
-
-				end)
-
-				button.interact.MouseButton1Click:Connect(function()
-					if ButtonData.CallBack then
-						local success, errorMsg = pcall(ButtonData.CallBack)
-						if not success then
-							warn("[CALLBACK ERROR]:", errorMsg)
-						end
-					else
-						warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
-					end
-				end)
-
-				-- Extra Check 
-				button.interact.MouseLeave:Connect(function()
-					tweenservice:Create(button.UIStroke, fITween, { Transparency = 0 }):Play()
-					tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
-				end)
-			elseif ButtonData.Type == 'Hold' then
-				local HoldTime = ButtonData.HoldTime
-				local Holding = false
-				local TimeLeft = HoldTime
-				local Complete = false
-
-				button.ImageLabel.Image = 'rbxassetid://127075195365098'
-				button.ImageLabel.Rotation = 0
-				button.ImageLabel.Size = UDim2.new(0, 16,0, 16)
-				button.ImageLabel.Position = UDim2.new(1, -41,0.5, 0)
-
-				local function CancelOperation()
-					Holding = false
-					tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
-					tweenservice:Create(button.Title.Timer, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
-					if not Complete then
-						tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 1 }):Play()
-						tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
-						tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,-15 ,0 ,button.Position.Y.Offset) }):Play()
-						task.wait(0.15)
-						tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,30 ,0 ,button.Position.Y.Offset) }):Play()
-						task.wait(0.15)
-						tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,0 ,0 ,button.Position.Y.Offset) }):Play()
-						task.wait(1)
-						tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 0 }):Play()
-					end
-
-					-- did not complete 
-
-					--	button.UIStroke.UIGradient.Offset = Vector2.new(-1, 0)
-					--	tweenservice:Create(button.UIStroke, TweenInfo.new(HoldTime, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
-
-					-- Restore the timer value
-					TimeLeft = HoldTime
-					button.Title.Timer.Text = tostring(HoldTime)
-					task.wait(0.1)
-					Complete = false
-				end
-
-				button.interact.MouseButton1Down:Connect(function()
-
-					Holding = true
-					TimeLeft = HoldTime
-					button.Title.Timer.Text = tostring(TimeLeft)
-					tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
-					tweenservice:Create(button.Title.Timer, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
-					tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(HoldTime, Enum.EasingStyle.Linear), { Offset = Vector2.new(0.7, 0) }):Play()
-					tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 0}):Play()
-
-					-- Countdown loop
-					while Holding and TimeLeft > 0 do
-						TimeLeft = math.max(0, TimeLeft - runservice.Heartbeat:Wait()) -- Ensures it doesn't go below 0
-						button.Title.Timer.Text = string.format("%.1f", TimeLeft) -- Always shows at least 0.0
-
-					end
-
-					if TimeLeft <= 0 then
-						Complete = true
-						if ButtonData.CallBack then
-							local success, errorMsg = pcall(ButtonData.CallBack)
-							if not success then
-								warn("[CALLBACK ERROR]:", errorMsg)
-							end
-						else
-							warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
-						end
-						tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }):Play()
-						tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(0.1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
-						task.wait(0.34)
-						tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(17, 17, 17) }):Play()
-					end
-				end)
-
-				button.interact.MouseButton1Up:Connect(function()
-					CancelOperation()
-				end)
-
-				button.interact.MouseLeave:Connect(function()
-					if Holding then
-						CancelOperation()
-					end
-				end)
-			end
-
-			--[DESC]
-			local descLabel = button:FindFirstChild("Desc")
-
-			if descLabel then
-				if ButtonData.Desc and ButtonData.Desc ~= "" then
-					descLabel.Text = ButtonData.Desc
-					descLabel.Visible = true
-					descLabel.TextWrapped = true
-
-					local function updateSize()
-						local textSize = textservice:GetTextSize(
-							descLabel.Text,
-							descLabel.TextSize,
-							descLabel.Font,
-							Vector2.new(descLabel.AbsoluteSize.X, math.huge) -- Allows vertical expansion
-						)
-
-						local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
-						local newButtonSize = UDim2.new(button.Size.X.Scale, button.Size.X.Offset, 0, button.Title.Size.Y.Offset + textSize.Y + 5) -- Adding extra padding
-
-						local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
-						descTween:Play()
-
-						local buttonTween = tweenservice:Create(button, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
-						buttonTween:Play()
-					end
-
-					updateSize()
-
-					descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
-				else
-					descLabel.Visible = false
-				end
-			end
-
-
-		end
-
-		---
-
-		function element:ColorPicker(ColorPicker, Parent)
-			local ColorPickerData = {
-				Title = ColorPicker.Title;
-				Color = ColorPicker.Color;
-				Linkable = ColorPicker.Linkable;
-				CallBack = ColorPicker.CallBack;
-			}
-
-			ColorPicker.Linkable = ColorPicker.Linkable or true
-
-			local colorpicker = Library.Settings.ColorPicker:Clone()
-			colorpicker.Visible = true
-			colorpicker.Parent = Parent
-			colorpicker.Title.Text = ColorPickerData.Title
-			colorpicker.Name = ColorPickerData.Title
-
-			local isLinkable = Instance.new("BoolValue")
-			isLinkable.Name = 'isLinkable'
-			isLinkable.Value = ColorPickerData.Linkable
-			isLinkable.Parent = colorpicker
-
-			local HueSat = Instance.new("Color3Value")
-			HueSat.Name = 'HueSat'
-			HueSat.Value = ColorPickerData.Color
-			HueSat.Parent = colorpicker
-
-			local Open = false
-			local DeBounce = false
-			local State = false
-
-			colorpicker.color.Values.Hue.BackgroundTransparency = 1
-			colorpicker.color.Values.Hue.Pin.BackgroundTransparency = 1
-			colorpicker.color.Values.Hue.Pin.UIStroke.Transparency = 1
-			colorpicker.color.Values.Rainbow.ImageTransparency = 1
-
-			colorpicker.color.SVPicker.Pin.BackgroundTransparency = 1
-			colorpicker.color.SVPicker.Pin.UIStroke.Transparency = 1
-			colorpicker.color.SVPicker.Brightness.BackgroundTransparency = 1
-			colorpicker.color.SVPicker.Saturation.BackgroundTransparency = 1
-
-			colorpicker.HueValues.HEX.BackgroundTransparency = 1
-			colorpicker.HueValues.HEX.UIStroke.Transparency = 1
-			colorpicker.HueValues.HEX.V.HEXBox.TextTransparency = 1
-			colorpicker.HueValues.HEX.Link.ImageTransparency = 1
-			colorpicker.HueValues.HEX.Copy.ImageTransparency = 1
-
-			colorpicker.HueValues.RGB.BackgroundTransparency = 1
-			colorpicker.HueValues.RGB.UIStroke.Transparency = 1
-			colorpicker.HueValues.RGB.V.RGBBox.TextTransparency = 1
-			colorpicker.HueValues.RGB.Copy.ImageTransparency = 1
-			colorpicker.QuickClose.Interactable = false
-
-			local recentContainer = colorpicker.color.Recent
-			local spacing = 5 -- Space between elements
-			local frameSize = 12 -- Assumed size of each color frame
-
-			-- Function to update recent color layout manually
-			local function updateRecentLayout()
-				local children = {} -- Store frames
-				for _, child in pairs(recentContainer:GetChildren()) do
-					if child:IsA("Frame") then
-						table.insert(children, child)
-					end
-				end
-
-				-- Sort based on order of appearance
-				table.sort(children, function(a, b)
-					return a.LayoutOrder > b.LayoutOrder -- Newest first
-				end)
-
-				-- Calculate total width needed
-				local totalWidth = #children * frameSize + math.max(#children - 1, 0) * spacing
-				local startX = recentContainer.AbsoluteSize.X - totalWidth -- Start at the right
-
-				for _, frame in ipairs(children) do
-					--	frame.Position = UDim2.new(0, startX, 0.5, -frame.Size.Y.Offset / 2)
-					tweenservice:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(0, startX , 0.8, -frame.Size.Y.Offset / 2) }):Play()
-					startX += frameSize + spacing
-				end
-			end
-
-			-- Hook into child added/removed events
-			recentContainer.ChildAdded:Connect(function(child)
-				if child:IsA("Frame") then
-					child.LayoutOrder = os.time() -- Ensure new frames have the latest order
-					updateRecentLayout()
-				end
-			end)
-			recentContainer.ChildRemoved:Connect(updateRecentLayout)
-			updateRecentLayout()
-
-			local function OpenPicker()
-				Open = true
-				DeBounce = true
-				colorpicker.color.Values.Visible = true
-				colorpicker.color.SVPicker.Visible = true
-				colorpicker.HueValues.Visible = true
-				colorpicker.color.Recent.Visible = true
-
-				colorpicker.interact.Interactable = false
-				colorpicker.QuickClose.Interactable = true
-
-				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.95, Enum.EasingStyle.Quart ), { Size = UDim2.new(0, 1,0, 1) }):Play()
-				tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(35, 35, 35) }):Play()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				task.wait(0.12)
-				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.9, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -200,0, 120) }):Play()
-				tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(18, 18, 18) }):Play()
-				tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -40,0, 180) }):Play()
-				tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
-				task.wait(0.6)
-
-				tweenservice:Create(colorpicker.color.SVPicker.Brightness, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Saturation, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Pin, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Pin.UIStroke, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { Transparency = 0.58 }):Play()
-
-				task.wait(0.5)
-				tweenservice:Create(colorpicker.color.Values.Hue, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Hue.Pin, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Hue.Pin.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.58 }):Play()
-
-				tweenservice:Create(colorpicker.HueValues.HEX, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0.9 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.4 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.V.HEXBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
-
-				task.wait(0.09)
-				tweenservice:Create(colorpicker.HueValues.RGB, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0.9 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.4 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.V.RGBBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 0 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
-
-				for _,v in ipairs(colorpicker.color.Recent:GetChildren()) do
-					if v:IsA('Frame') then
-						task.wait(0.1)
-						tweenservice:Create(v, TweenInfo.new( 0.3, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
-					end
-				end
-
-				task.wait(0.7)
-				DeBounce = false
-			end
-
-			local function ClosePicker()
-				Open = false
-				DeBounce = true
-				tweenservice:Create(colorpicker, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(1, -40,0, 40) }):Play()
-				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 20,0, 20) }):Play()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				colorpicker.interact.Interactable = true
-				colorpicker.QuickClose.Interactable = false
-
-				--	task.wait(0.6)
-
-				tweenservice:Create(colorpicker.color.SVPicker.Brightness, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Saturation, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Pin, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.SVPicker.Pin.UIStroke, TweenInfo.new( 0.4, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Hue, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Hue.Pin, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Hue.Pin.UIStroke, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
-				tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
-
-				tweenservice:Create(colorpicker.HueValues.RGB, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.V.RGBBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.RGB.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
-
-				task.wait(0.1)
-
-				tweenservice:Create(colorpicker.HueValues.HEX, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.V.HEXBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
-				tweenservice:Create(colorpicker.HueValues.HEX.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
-				for _,v in ipairs(colorpicker.color.Recent:GetChildren()) do
-					if v:IsA('Frame') then
-						tweenservice:Create(v, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
-					end
-				end
-				task.wait(1)
-				colorpicker.color.SVPicker.Visible = false
-				colorpicker.color.Recent.Visible = false
-				task.wait(0.7)
-				DeBounce = false
-			end
-
-			colorpicker.interact.MouseButton1Click:Connect(function()
-				if DeBounce then return end
-				if not Open then
-					Open = true
-					OpenPicker()
-				end
-			end)
-
-			colorpicker.QuickClose.MouseButton1Click:Connect(function()
-				if DeBounce then return end
-				if Open then
-					Open = false
-					ClosePicker()
-				end
-			end)
-
-			colorpicker.QuickClose.MouseEnter:Connect(function()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 70,0, 3) }):Play()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-			end)
-
-			colorpicker.QuickClose.MouseLeave:Connect(function()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 60,0, 3) }):Play()
-				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(33, 33, 33) }):Play()
-			end)
-
-			local HSV
-
-			if ColorPickerData.Color then
-				HSV = { ColorPickerData.Color:ToHSV() }
-			else
-
-				HSV = { 0, 0, 0 }
-			end
-			local Selected = ColorPickerData.Color
-			local HueValue = HSV[1]
-
-			local function TableToColor(Table)
-				if type(Table) ~= "table" then return Table end
-				return Color3.fromHSV(Table[1],Table[2],Table[3])
-			end
-
-			local function FormatColor(Color, format, precision)
-
-				format = format or "RGB"
-				precision = precision or 2
-
-				local formattedColor = ""
-
-				if format == "RGB" then
-					return	math.round(Color.R * 255) .. "," .. math.round(Color.G * 255) .. "," .. math.round(Color.B * 255)
-				elseif format == "Hex" then
-					formattedColor = string.format("#%02X%02X%02X",
-						math.round(Color.R * 255),
-						math.round(Color.G * 255),
-						math.round(Color.B * 255)
-					)
-
-					return formattedColor
-				end
-			end
-
-			local SVPicker = colorpicker.color.SVPicker
-			local HUESlider = colorpicker.color.Values.Hue
-
-			SVPicker.Pin.BackgroundColor3 = ColorPickerData.Color
-			HUESlider.Pin.BackgroundColor3 = ColorPickerData.Color
-
-			local function updatestuff()
-				ColorPickerData.Color = TableToColor(HSV)
-				colorpicker.color.BackgroundColor3 = ColorPickerData.Color
-				colorpicker.color.glow.ImageColor3 = ColorPickerData.Color
-
-				colorpicker.color.BackgroundColor3 = Color3.fromHSV(HSV[1], 1, 1)
-				local newColor = Color3.fromHSV(HSV[1], HSV[2], HSV[3])
-				local newColor2 = Color3.fromHSV(HSV[1], 1, 1)
-
-				HueSat.Value = ColorPickerData.Color
-
-				tweenservice:Create(HUESlider.Pin, TweenInfo.new(0.1, Enum.EasingStyle.Exponential), {BackgroundColor3 = newColor2}):Play()
-				tweenservice:Create(SVPicker.Pin, TweenInfo.new(0.1, Enum.EasingStyle.Exponential), {BackgroundColor3 = newColor}):Play()
-
-
-				tweenservice:Create(SVPicker.Pin, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					Position = UDim2.new(HSV[2], 0, 1 - HSV[3], 0)
-				}):Play()
-
-				tweenservice:Create(HUESlider.Pin, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					Position = UDim2.new(1 - HSV[1], 0, 0.5, 0)
-				}):Play()
-
-				local formattedHex = FormatColor(ColorPickerData.Color, 'Hex')
-				colorpicker.HueValues.HEX.V.HEXBox.PlaceholderText = formattedHex
-
-				local formattedRGB = FormatColor(ColorPickerData.Color,'RGB', 2)
-				colorpicker.HueValues.RGB.V.RGBBox.PlaceholderText = formattedRGB
-
-				if ColorPickerData.CallBack then
-					ColorPickerData.CallBack(ColorPickerData.Color)
-				end
-			end
-			updatestuff()
-
-			local function AddRecentColor(newColor)
-				local recentFrame = colorpicker.colorPlaceHolder:Clone()
-				recentFrame.Visible = true
-				recentFrame.Parent = colorpicker.color.Recent
-				recentFrame.BackgroundColor3 = newColor
-
-				recentFrame.interact.MouseButton1Click:Connect(function()
-				--[[	tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 5,0, 5) }):Play()
-					task.wait(0.09)
-					tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 12,0, 12) }):Play() ]]
-
-					local h, s, v = newColor:ToHSV()
-					if s > 0.02 then
-						HSV[1] = h
-					end
-					HSV[2] = s
-					HSV[3] = v
-					updatestuff()
-
-				end)
-
-				recentFrame.interact.MouseEnter:Connect(function()
-					tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 20,0, 20) }):Play()
-				end)
-
-				recentFrame.interact.MouseLeave:Connect(function()
-					tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 12,0, 12) }):Play()
-				end)
-
-				local maxRecentColors = 10
-				local recentContainer = colorpicker.color.Recent
-
-				-- Iterate through children and remove only the first Frame when over limit
-				local children = recentContainer:GetChildren()
-				if #children > maxRecentColors then
-					for _, child in ipairs(children) do
-						if child:IsA("Frame") then
-							child:Destroy()
-							break -- Ensure only one frame is deleted at a time
-						end
-					end
-				end
-			end
-
-			local SV, HUE = nil, nil
-
-			SettingsElements:AddConnection(SVPicker.InputBegan, function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					SV = runservice.RenderStepped:Connect(function()
-						local mouse = game.Players.LocalPlayer:GetMouse()
-						local ColorX = math.clamp(mouse.X - SVPicker.AbsolutePosition.X, 0, SVPicker.AbsoluteSize.X) / SVPicker.AbsoluteSize.X
-						local ColorY = math.clamp(mouse.Y - SVPicker.AbsolutePosition.Y, 0, SVPicker.AbsoluteSize.Y) / SVPicker.AbsoluteSize.Y
-
-						HSV[2] = ColorX
-						HSV[3] = 1 - ColorY
-
-						updatestuff()
-					end)
-				end
-			end)
-
-			SettingsElements:AddConnection(SVPicker.InputEnded, function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 and SV then
-					SV:Disconnect()
-					SV = nil
-					AddRecentColor(ColorPickerData.Color)
-				end
-			end)
-
-			SettingsElements:AddConnection(HUESlider.InputBegan, function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					HUE = runservice.RenderStepped:Connect(function()
-						local mouse = game.Players.LocalPlayer:GetMouse()
-						local ColorX = math.clamp(mouse.X - HUESlider.AbsolutePosition.X, 0, HUESlider.AbsoluteSize.X) / HUESlider.AbsoluteSize.X
-
-						HSV[1] = 1 - ColorX
-
-						updatestuff()
-					end)
-				end
-			end)
-
-			SettingsElements:AddConnection(HUESlider.InputEnded, function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1 and HUE then
-					HUE:Disconnect()
-					HUE = nil
-					AddRecentColor(ColorPickerData.Color)
-				end
-			end)
-
-			colorpicker.HueValues.HEX.V.HEXBox.FocusLost:Connect(function(Enter)
-				if not Enter then return end
-
-				local hexInput = colorpicker.HueValues.HEX.V.HEXBox.Text
-
-				local success, result = pcall(function()
-					return Color3.fromHex(hexInput)
-				end)
-
-				if success then
-					local Hue, Saturation, Value = result:ToHSV()
-					colorpicker.HueValues.HEX.V.HEXBox.Text = ''
-					if Saturation > 0.02 then
-						HSV[1] = Hue
-					end
-					HSV[2] = Saturation
-					HSV[3] = Value
-					updatestuff()
-				else
-					warn("Failed to convert hex to color:", result)
-				end
-			end)
-
-			colorpicker.HueValues.RGB.V.RGBBox.FocusLost:Connect(function(Enter)
-				if not Enter then return end
-
-				local rgbInput = colorpicker.HueValues.RGB.V.RGBBox.Text
-
-				local r, g, b = rgbInput:match("^(%d+),%s*(%d+),%s*(%d+)$")
-
-				if r and g and b then
-
-					r, g, b = tonumber(r), tonumber(g), tonumber(b)
-
-					if r >= 0 and r <= 255 and g >= 0 and g <= 255 and b >= 0 and b <= 255 then
-						local color = Color3.fromRGB(r, g, b)
-
-						local Hue, Saturation, Value = color:ToHSV()
-						if Saturation > 0.02 then
-							HSV[1] = Hue
-						end
-						HSV[2] = Saturation
-						HSV[3] = Value
-
-						colorpicker.HueValues.RGB.V.RGBBox.Text = ''
-						updatestuff()
-					else
-						warn("RGB values must be between 0 and 255.")
-					end
-				else
-					warn("Invalid RGB format. Please use the format 'R,G,B' (e.g., 16,16,16).")
-				end
-			end)
-
-			local UserInputService = game:GetService("UserInputService")
-			local TweenService = game:GetService("TweenService")
-			local RunService = game:GetService("RunService")
-
-			local linkDragging = false
-			local originalPosition = UDim2.new(1, -10, 0.5, 0)
-			local draggedColorPicker = nil
-
-			local function isMouseOver(guiObject)
-				local mouse = game.Players.LocalPlayer:GetMouse()
-				local pos = guiObject.AbsolutePosition
-				local size = guiObject.AbsoluteSize
-				return mouse.X >= pos.X and mouse.X <= pos.X + size.X and mouse.Y >= pos.Y and mouse.Y <= pos.Y + size.Y
-			end
-
-			colorpicker.HueValues.HEX.Link.MouseButton1Down:Connect(function()
-				linkDragging = true
-				draggedColorPicker = colorpicker
-
-				TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-				TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 20,0, 20)}):Play()
-
-				local followMouse
-				followMouse = RunService.RenderStepped:Connect(function()
-					if not linkDragging then
-						followMouse:Disconnect()
-						return
-					end
-					local mouse = game.Players.LocalPlayer:GetMouse()
-					colorpicker.HueValues.HEX.Link.Position = UDim2.new(0, mouse.X - colorpicker.AbsolutePosition.X - 10, 0, mouse.Y - colorpicker.AbsolutePosition.Y - 100)
-
-					for _, otherPicker in pairs(Parent:GetChildren()) do
-						if otherPicker:IsA("Frame") and otherPicker:FindFirstChild("isLinkable") and otherPicker.isLinkable.Value then
-							if isMouseOver(otherPicker) and otherPicker ~= draggedColorPicker then
-								TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
-							else
-								TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							end
-						end
-					end
-				end)
-			end)
-
-			UserInputService.InputEnded:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 and linkDragging then
-					linkDragging = false
-					local foundTarget = false
-
-					for _, otherPicker in pairs(Parent:GetChildren()) do
-						if otherPicker:IsA("Frame") and otherPicker:FindFirstChild("isLinkable") and otherPicker.isLinkable.Value then
-							if isMouseOver(otherPicker) and otherPicker ~= draggedColorPicker then
-								otherPicker.HueSat.Value = draggedColorPicker.HueSat.Value
-								updatestuff() 
-								foundTarget = true
-								TweenService:Create(
-									colorpicker.HueValues.HEX.Link,
-									TweenInfo.new(0.3, Enum.EasingStyle.Quint),
-									{ Position = originalPosition }
-								):Play()
-
-								TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-								TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(66, 66, 66)}):Play()
-								TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 15,0, 15)}):Play()
-								break
-							end
-						end
-					end
-
-					if not foundTarget then
-						TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(66, 66, 66)}):Play()
-						TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 15,0, 15)}):Play()
-						TweenService:Create(
-							colorpicker.HueValues.HEX.Link,
-							TweenInfo.new(0.3, Enum.EasingStyle.Quint),
-							{ Position = originalPosition }
-						):Play()
-					end
-				end
-			end)
-
-			local function updateColorPicker()
-				local Hue, Saturation, Value = HueSat.Value:ToHSV()
-
-				if Saturation > 0.02 then
-					HSV[1] = Hue
-				end
-				HSV[2] = Saturation
-				HSV[3] = Value
-
-				updatestuff()
-			end
-
-			HueSat.Changed:Connect(updateColorPicker)
-
-			local hueIncrement = 0.005 
-
-			local function RainbowEffect()
-				HueValue = (HueValue + hueIncrement) % 1
-				HSV[1] = HueValue
-
-				updatestuff()
-			end
-
-			local isRainbowEnabled = false
-			local huerender = nil
-
-			local function ToggleRainbowEffect()
-				isRainbowEnabled = not isRainbowEnabled
-				if isRainbowEnabled then
-					if not huerender then
-						huerender = runservice.RenderStepped:Connect(RainbowEffect)
-						tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new(0.5, Enum.EasingStyle.Exponential ), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-					end
-				else
-					if huerender then
-						huerender:Disconnect()
-						tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new(0.5, Enum.EasingStyle.Exponential ), {ImageColor3 = Color3.fromRGB(62, 62, 62)}):Play()
-						huerender = nil
-					end
-				end
-			end
-
-			colorpicker.color.Values.Rainbow.MouseButton1Click:Connect(ToggleRainbowEffect)
-
-		end
-
-		---
-
-		function element:Section(Title, Parent, Icon)
-			local SectionData = {
-				Title = Title
-			}
-
-			local Section =  Library.Settings.Section:Clone()
-			Section.Visible = true
-			Section.Title.Text = Title
-			Section.Parent = Parent
-			Section.Title.Position = UDim2.new(0, 0,0, 0)
-
-			if Icon then
-				Section.icon.Image = 'rbxassetid://'..Icon
-				Section.Title.Position = UDim2.new(0, 25,0, 0)
-			else
-				Section.icon.Visible = false
-			end
-		end
-
-		function element:Paragraph(Paragraph, Parent)
-			local ParaData = {
-				Title = Paragraph.Title;
-				Content = Paragraph.Content;
-			}
-
-			local Para = Library.Settings.Paragraph:Clone()
-			Para.Visible = true
-			Para.Parent = Parent
-			Para.Title.Text = ParaData.Title
-			Para.Content.Text = ParaData.Content
-
-			Para.Content.Size = UDim2.new(1, -20, 0, Para.Content.TextBounds.Y)
-			Para.Size = UDim2.new(1, -15, 0, Para.Content.Size.Y.Offset + 45)
-
-			local function updateSize()
-				local textSize = textservice:GetTextSize(
-					Para.Content.Text,
-					Para.Content.TextSize,
-					Para.Content.Font,
-					Vector2.new(Para.Content.AbsoluteSize.X, math.huge) -- Allows vertical expansion
-				)
-
-				local newDescSize = UDim2.new(1, -20, 0, textSize.Y)
-				local newButtonSize = UDim2.new(Para.Size.X.Scale, Para.Size.X.Offset, 0, textSize.Y + 40) -- Adding extra padding
-
-				local descTween = tweenservice:Create(Para.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
-				descTween:Play()
-
-				local buttonTween = tweenservice:Create(Para, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
-				buttonTween:Play()
-			end
-
-			updateSize()
-
-			Para.Content:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
-
-			local ParagraphSettings = {}
-
-			function ParagraphSettings:Set(text)
-				Para.Content.Text = text
-			end
-
-			ParagraphSettings.Instance = Para
-
-			return ParagraphSettings
-
-		end
-
-		function element:CreateSlider(Slider, Parent)
-			local SliderData = {
-				Title = Slider.Title;
-				Desc = Slider.Description;
-				Sliders = Slider.Sliders
-			}
-
-			local slider = Library.Settings.Slider:Clone()
-			slider.Visible = true
-			slider.Parent = Parent
-			slider.Title.Text = SliderData.Title
-			slider.Name = SliderData.Title
-			slider.slideholder.slider.Visible = false
-
-
-			--[SLIDERS INITIALIZE]
-			for _, Options in ipairs(SliderData.Sliders) do
-				local Slider =  Library.Settings.Slider.slideholder.slider:Clone()
-
-				Options = {
-					Title = Options.Title or "Slider";
-					Increment = Options.Increment or 1;
-					Range = Options.Range or {0, 100};
-					StarterValue = Options.StarterValue or 16;
-					CallBack = Options.CallBack;
-				}
-
-				Slider.Name = Options.Title
-				Slider.Title.Text = Options.Title
-
-				local dragging = false
-				Slider.Visible = true
-				Slider.Parent = slider.slideholder
-
-				local SliderPosition
-				if Options.StarterValue <= Options.Range[1] then
-					SliderPosition = 0
-				elseif Options.StarterValue >= Options.Range[2] then
-					SliderPosition = 1
-				else
-					local range = Options.Range[2] - Options.Range[1]
-					SliderPosition = (Options.StarterValue - Options.Range[1]) / range
-				end
-
-
-				Slider.slide.slideframe:TweenSize(UDim2.new(SliderPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
-
-				local decimalPlaces = tostring(Options.Increment):match("%.([^0]*)") and #tostring(Options.Increment):match("%.([^0]*)") or 0
-				Slider.v.Text = string.format("<font size='14'>%." .. decimalPlaces .. "f</font><font color='#434343'>/%." .. decimalPlaces .. "f</font>", Options.StarterValue, Options.Range[2])
-
-
-				local function UpdateSlider(x)
-					if dragging then
-						local sliderStart = Slider.slide.AbsolutePosition.X
-						local sliderWidth = Slider.slide.AbsoluteSize.X
-						local sliderPosition = (x - sliderStart) / sliderWidth
-						sliderPosition = math.clamp(sliderPosition, 0, 1)
-
-						local range = Options.Range[2] - Options.Range[1]
-						local newValue = Options.Range[1] + sliderPosition * range
-						newValue = math.floor((newValue - Options.Range[1]) / Options.Increment + 0.5) * Options.Increment + Options.Range[1]
-
-						-- Update the slider visual position
-						local snapPosition = (newValue - Options.Range[1]) / range
-						Slider.slide.slideframe:TweenSize(UDim2.new(snapPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.55, true)
-
-
-						-- Update the displayed value
-						local decimalPlaces = tostring(Options.Increment):match("%.([^0]*)") and #tostring(Options.Increment):match("%.([^0]*)") or 0
-						Slider.v.Text = string.format("<font size='14'>%." .. decimalPlaces .. "f</font><font color='#434343'>/%." .. decimalPlaces .. "f</font>", newValue, Options.Range[2])
-
-
-						tweenservice:Create(Slider.Title, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-
-						local success, errorMsg = pcall(function()
-							Options.CallBack(newValue)
-						end)
-						if not success then
-							warn("[CALLBACK ERROR][" .. Slider.Name .. "]: " .. tostring(errorMsg))
-						end
-					end
-				end
-
-				Slider.slide.Interact.MouseButton1Down:Connect(function()
-					dragging = true
-				end)
-
-				Slider.slide.Interact.MouseButton1Up:Connect(function()
-					dragging = false
-				end)
-
-				SettingsElements:AddConnection(userinput.InputEnded, function(input, processed)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 then
-						dragging = false
-						tweenservice:Create(Slider.Title, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { TextTransparency = 0.6 }):Play()
-					end
-				end)
-
-				SettingsElements:AddConnection(userinput.InputChanged, function(input)
-					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-						UpdateSlider(input.Position.X)
-					end
-				end)
-
-		--[[Slider.slide.slideframe.BackgroundColor3 = syde.theme.HitBox
-		Slider.slide.slideframe.shadowHolder.ambientShadow.ImageColor3 = syde.theme.HitBox
-		Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = syde.theme.HitBox
-		Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = syde.theme.HitBox]]
-				slider.slideholder.Size = UDim2.new(1,-30,0,slider.slideholder.UIListLayout.AbsoluteContentSize.Y)
-				slider.Size = UDim2.new(1,-40,0,slider.slideholder.AbsoluteSize.Y + 55)
-
-		--[[syde:AddConnection(syde.Comms.Event, function(p, color)
-			if p == 'HitBox' then
-				Slider.slide.slideframe.BackgroundColor3 = color
-				Slider.slide.slideframe.shadowHolder.ambientShadow.ImageColor3 = color
-				Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = color
-				Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = color
-			end
-		end)]]
-			end
-
-			--[DESC]
-			local descLabel = slider.slideholder:FindFirstChild("Desc")
-
-			if descLabel then
-				if SliderData.Desc and SliderData.Desc ~= "" then
-					descLabel.Text = SliderData.Desc
-					descLabel.Visible = true
-					descLabel.TextWrapped = true
-
-					local function updateSize()
-						local textSize = textservice:GetTextSize(
-							descLabel.Text,
-							descLabel.TextSize,
-							descLabel.Font,
-							Vector2.new(descLabel.AbsoluteSize.X, math.huge) -- Allows vertical expansion
-						)
-
-						local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
-						local newButtonSize = UDim2.new(slider.Size.X.Scale, slider.Size.X.Offset, 0,slider.slideholder.AbsoluteSize.Y + slider.Title.Size.Y.Offset + textSize.Y - 5) -- Adding extra padding
-
-						local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
-						descTween:Play()
-
-						local ToggleTween = tweenservice:Create(slider, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
-						ToggleTween:Play()
-					end
-
-					updateSize()
-
-					descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
-				else
-					descLabel.Visible = false
-				end
-			end
-
-
-		end
-
-		function element:Keybind(Keybind, Parent)
-			local KeybindData = {
-				Title = Keybind.Title;
-				Key = Keybind.Key;
-				Desc = Keybind.Description or "";
-				CallBack = Keybind.CallBack;
-				WaitingForKey = false;
-				Hold = false;
-				Holding = false
-			}
-
-			print('made keybind')
-
-			local KeyBind = Library.Settings.KeyBind:Clone()
-			KeyBind.Visible = true
-			KeyBind.Parent = Parent
-			KeyBind.Title.Text = KeybindData.Title
-			KeyBind.Name = KeybindData.Title
-
-			KeyBind.Bind.v.Text = KeybindData.Key and KeybindData.Key.Name or "NONE"
-			tweenservice:Create(KeyBind.Bind, TweenInfo.new(0.55, Enum.EasingStyle.Quint ), {Size = UDim2.new(0, KeyBind.Bind.v.TextBounds.X + 15, 0, KeyBind.Bind.Size.Y.Offset)}):Play()
-
-			KeyBind.interact.MouseButton1Click:Connect(function()
-				KeyBind.Bind.v.Text = '...'
-				KeybindData.WaitingForKey = true
-			end)
-
-			KeyBind.Bind.v:GetPropertyChangedSignal('TextBounds'):Connect(function()
-				tweenservice:Create(KeyBind.Bind, TweenInfo.new(0.55, Enum.EasingStyle.Quint ), {Size = UDim2.new(0, KeyBind.Bind.v.TextBounds.X + 15, 0, KeyBind.Bind.Size.Y.Offset)}):Play()
-			end)
-
-			-- Utility: Set a keybind (both value and label)
-			local function SetKeybind(keyCode)
-				if keyCode and keyCode ~= Enum.KeyCode.Unknown then
-					KeybindData.Key = keyCode
-					KeyBind.Bind.v.Text = keyCode.Name
-
-					if typeof(Keybind.OnKeyChanged) == "function" then
-						pcall(Keybind.OnKeyChanged, keyCode)
-					end
-				else
-					KeybindData.Key = nil
-					KeyBind.Bind.v.Text = "NONE"
-				end
-			end
-
-			-- Main input handler
-			SettingsElements:AddConnection(userinput.InputBegan, function(input)
-				if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-
-				-- Setup mode: waiting for a new keybind
-				if KeybindData.WaitingForKey then
-					KeybindData.WaitingForKey = false
-					SetKeybind(input.KeyCode)
-					return
-				end
-
-				-- Match against current keybind
-				if input.KeyCode == KeybindData.Key then
-					KeybindData.Hold = true
-
-					-- Hold state monitor
-					local holdConnection
-					holdConnection = input.Changed:Connect(function(prop)
-						if prop == "UserInputState" then
-							local state = input.UserInputState
-							KeybindData.Hold = (state == Enum.UserInputState.Begin)
-							if state == Enum.UserInputState.End and holdConnection then
-								holdConnection:Disconnect()
-							end
-						end
-					end)
-
-					-- Callback logic
-					local success, result = pcall(KeybindData.CallBack, KeybindData.Key)
-					if not KeybindData.Holding then
-						if not success then
-							warn(`[Keybind: {KeyBind.Name}] Callback Error: {result}`)
-						end
-					else
-						if KeybindData.Hold then
-							local holdLoop
-							holdLoop = runservice.RenderStepped:Connect(function()
-								if not KeybindData.Hold then
-									KeybindData.CallBack(false)
-									holdLoop:Disconnect()
-								else
-									KeybindData.CallBack(false)
-								end
-							end)
-						end
-					end
-				end
-			end)
-
-		end
-
-		function element:Toggle(Toggle, Parent)
-			local ToggleData = {
-				Title = Toggle.Title or "Temp Toggle";
-				Desc = Toggle.Description or "";
-				V = Toggle.Value or false;
-				Config = Toggle.Config or false;
-				CallBack = Toggle.CallBack
-			}
-
-			local toggle = Library.Settings.Toggle:Clone()
-			toggle.Visible = true
-			toggle.Parent = Parent
-			toggle.Title.Text = ToggleData.Title
-			toggle.Name = ToggleData.Title
-
-			local toggleConfiguration = UI.Render.ToggleConfiguration:Clone()
-			toggleConfiguration.Parent = UI.Render
-			toggleConfiguration.Visible = false
-
-			toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
-			tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
-
-			toggleConfiguration.BackgroundTransparency = 1
-			toggleConfiguration.Container.KeyBind.Title.TextTransparency = 1
-			toggleConfiguration.Container.KeyBind.Bind.BackgroundTransparency = 1
-			toggleConfiguration.Container.KeyBind.Bind.v.TextTransparency = 1
-			toggleConfiguration.Container.Clear.Title.TextTransparency = 1
-			toggleConfiguration.Container.Clear.clear.ImageLabel.ImageTransparency = 1
-			toggleConfiguration.Size = UDim2.new(0, 75,0, 53)
-
-			if not ToggleData.Config then
-				toggle.Configure:Destroy()
-			end
-
-			local toggleTween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
-			local fadeTween = TweenInfo.new(0.57, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
-
-			local function UpdateToggleUI(state)
-				local targetColor = state and syde.theme.HitBox or Color3.fromRGB(20, 20, 20)
-				local strokeTransparency = state and 1 or 0
-				local checkTransparency = state and 0 or 1
-				local gradientTransparency = state and 0 or 1
-
-				tweenservice:Create(toggle.tog, toggleTween, { BackgroundColor3 = targetColor }):Play()
-				tweenservice:Create(toggle.tog.UIStroke, toggleTween, { Transparency = strokeTransparency }):Play()
-				tweenservice:Create(toggle.tog.check, toggleTween, { ImageTransparency = checkTransparency }):Play()
-				tweenservice:Create(toggle.tog.gradfr, fadeTween, { BackgroundTransparency = gradientTransparency }):Play()
-			end
-
-			UpdateToggleUI(ToggleData.V)
-
-			toggle.interact.MouseButton1Click:Connect(function()
-				ToggleData.V = not ToggleData.V
-				UpdateToggleUI(ToggleData.V)
-
-				local success, errorMsg = pcall(function()
-					if ToggleData.CallBack then
-						ToggleData.CallBack(ToggleData.V)
-					end
-				end)
-
-				if not success then
-					warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
-				end
-			end)
-
-			--[DESC]
-			local descLabel = toggle:FindFirstChild("Desc")
-
-			if descLabel then
-				if ToggleData.Desc and ToggleData.Desc ~= "" then
-					descLabel.Text = ToggleData.Desc
-					descLabel.Visible = true
-					descLabel.TextWrapped = true
-
-					local function updateSize()
-						local textSize = textservice:GetTextSize(
-							descLabel.Text,
-							descLabel.TextSize,
-							descLabel.Font,
-							Vector2.new(descLabel.AbsoluteSize.X, math.huge)
-						)
-
-						local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
-						local newButtonSize = UDim2.new(toggle.Size.X.Scale, toggle.Size.X.Offset, 0, toggle.Title.Size.Y.Offset + textSize.Y + 5) -- Adding extra padding
-
-						local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
-						descTween:Play()
-
-						local ToggleTween = tweenservice:Create(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
-						ToggleTween:Play()
-					end
-
-					updateSize()
-
-					descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
-				else
-					descLabel.Visible = false
-				end
-			end
-
-
-			-- [CONFIGURATIPON]
-			if ToggleData.Config then
-
-				local State = false
-
-				local enterTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
-				local leaveTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
-
-				toggle.Configure.MouseEnter:Connect(function()
-					tweenservice:Create(toggle.Configure, enterTween, { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-				end)
-
-				toggle.Configure.MouseLeave:Connect(function()
-					tweenservice:Create(toggle.Configure, leaveTween, { ImageColor3 = Color3.fromRGB(104, 104, 104) }):Play()
-				end)
-
-				local function ToggleConfigOpen()
-					toggleConfiguration.Visible = true
-					State = true
-
-					tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 0 }):Play()
-					tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 186,0, 85) }):Play()
-
-				end
-
-				local function ToggleConfigClose()
-					State = false
-
-					tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 1 }):Play()
-					tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 75,0, 53) }):Play()
-
-					task.wait(0.5)
-
-					toggleConfiguration.Visible = false
-
-				end
-
-				local TogService
-				local heldKeys = {} 
-				local debounce1 = false
-
-				local function ToggleConfig()
-					if debounce1 then return end
-					debounce1 = true
-
-					if not toggleConfiguration.Visible then
-						TogService = runservice.RenderStepped:Connect(function()
-							toggleConfiguration:TweenPosition(UDim2.new(0,toggle.Configure.AbsolutePosition.X - 190,0,toggle.Configure.AbsolutePosition.Y + toggle.Configure.AbsoluteSize.Y + 65), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
-							if not toggleConfiguration.Visible then
-								TogService:Disconnect()
-							end
-						end)
-						ToggleConfigOpen()
-					else
-						if TogService then TogService:Disconnect() end
-						ToggleConfigClose()
-					end
-
-					task.delay(0.4, function()
-						debounce1 = false
-					end)
-				end
-
-				toggle.Configure.MouseButton1Click:Connect(function()
-					ToggleConfig()
-				end)
-
-				local function ResizeBindFrame()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
-				end
-
-				local function setKeybind(key)
-					if not key then
-						toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
-						ResizeBindFrame()
-						ToggleData.Keybind = nil
-					else
-						ToggleData.Keybind = key
-						ToggleData.KeybindReady = false
-
-						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
-						toggleConfiguration.Container.KeyBind.Bind.v.Text = key.Name
-						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(1, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
-						ResizeBindFrame()
-
-						task.delay(0.5, function()
-							ToggleData.KeybindReady = true
-						end)
-					end
-				end
-
-				toggleConfiguration.Container.KeyBind.Interact.MouseButton1Click:Connect(function()
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
-					task.wait(0.2)
-					toggleConfiguration.Container.KeyBind.Bind.v.Text = "..."
-					tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
-					ResizeBindFrame()
-
-
-					local connection
-					connection = userinput.InputBegan:Connect(function(input, processed)
-						if not processed and input.UserInputType == Enum.UserInputType.Keyboard then
-							setKeybind(input.KeyCode)
-							connection:Disconnect()
-						end
-					end)
-				end)
-
-				userinput.InputBegan:Connect(function(input, processed)
-					if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
-						ToggleData.V = not ToggleData.V
-						UpdateToggleUI(ToggleData.V)
-
-						if ToggleData.CallBack then
-							local success, errorMsg = pcall(function()
-								ToggleData.CallBack(ToggleData.V)
-							end)
-							if not success then
-								warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
-							end
-						end
-					end
-				end)
-
-				local debounce2 = false
-
-				toggleConfiguration.Container.Clear.Interact.MouseButton1Click:Connect(function()
-					if debounce2 then return end
-					debounce2 = true
-
-					setKeybind(nil)
-
-					local function blink()
-						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 13 }):Play()
-						task.wait(0.2)
-						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = -13 }):Play()
-						task.wait(0.2)
-						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
-					end
-
-					blink()
-
-					task.delay(2, function()
-						debounce2 = false
-					end)
-				end)
-
-				toggleConfiguration.Container.Clear.MouseEnter:Connect(function()
-					tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0.9 }):Play()
-				end)
-
-				toggleConfiguration.Container.Clear.MouseLeave:Connect(function()
-					tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
-				end)
-
-			end
-		end
-
-		return element
-
-	end
-
-	local element = SettingsElements:GetSettingsElements()
-
-	element:Section('Theme', WINDOW.Settings.Pages.Theme.Container, '0')
-
-	element:ColorPicker({
-		Title = 'Accent',
-		Linkable = true,
-		Color = syde.theme.Accent;
-		CallBack = function(v)
-			print(v)
-		end,
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-
-	element:ColorPicker({
-		Title = 'HitBox',
-		Linkable = true,
-		Color = syde.theme.HitBox;
-		CallBack = function(c)
-			syde:UpdateTheme({
-				['HitBox'] = c
-			})
-		end,
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-	element:Section('Other', WINDOW.Settings.Pages.Theme.Container, '0')
-
-	element:Keybind({
-		Title = 'Toggle UI',
-		Key = UIToggle,
-		OnKeyChanged = function(newKey)
-			UIToggle = newKey
-		end,
-		CallBack = function()
-			ToggleUI()
-		end,
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-
-	element:CreateSlider({
-		Title = 'Modifiers',
-		Sliders = {
-			{
-				Title = 'Glow Density',
-				Range = {0, 1},
-				Increment = 0.1,
-				StarterValue = WINDOW.Shadow.ImageLabel.ImageTransparency,
-				CallBack = function(v)
-					tweenservice:Create(WINDOW.Shadow.ImageLabel, TweenInfo.new(0.65, Enum.EasingStyle.Exponential), {ImageTransparency = v}):Play()
-				end,
-			},
-			{
-				Title = 'Drag Smoothness',
-				Range = {0, 1},
-				Increment = 0.1,
-				StarterValue = dragSpeed,
-				CallBack = function(v)
-					dragSpeed = v
-					print(dragSpeed)
-				end,
-			},
-		}
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-	element:Toggle({
-		Title = 'LockToScreen?',
-		Value = LockToScreen,
-		CallBack = function (v)
-			LockToScreen = v
-		end
-	}, WINDOW.Settings.Pages.Theme.Container)
-
-
-	element:Paragraph({
-		Title = 'Coming Soon',
-		Content = 'Privacy Options Coming Soon'
-	}, WINDOW.Settings.Pages.Privacy.Container)
-
-	element:Paragraph({
-		Title = 'Status',
-		Content = 'Your Up To Date!'
-	}, WINDOW.Settings.Pages.Info.Container)
-
-	local startTime = tick()
-
-	local uptimeParagraph = element:Paragraph({
-		Title = 'Session UpTime',
-		Content = 'Calculating...'
-	}, WINDOW.Settings.Pages.Info.Container)
-
-	local function formatTime(seconds)
-		local days = math.floor(seconds / 86400)
-		seconds = seconds % 86400
-		local hours = math.floor(seconds / 3600)
-		seconds = seconds % 3600
-		local minutes = math.floor(seconds / 60)
-		seconds = math.floor(seconds % 60)
-
-		return string.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
-	end
-
-	local startTime = tick()
-
-	SettingsElements:AddConnection(runservice.Heartbeat, function()
-		local uptime = tick() - startTime
-		local formatted = formatTime(uptime)
-		uptimeParagraph:Set("Server Uptime: " .. formatted)
-	end)
-
-
-end
 
 
 --[INITIALIZATION]
@@ -2616,8 +1327,1558 @@ function syde:Init(library)
 			end)
 		end
 	end
+	
 
 
+
+
+
+
+
+
+
+
+
+	--[[
+           __|  __| __ __| __ __| _ _|   \ |   __|   __|
+         \__ \  _|     |      |     |   .  |  (_ | \__ \
+         ____/ ___|   _|     _|   ___| _|\_| \___| ____/						
+	]]
+
+
+
+
+
+
+
+
+
+
+
+	do
+		local SettingsElements = {
+			Connections = {};
+			Comms = Instance.new('BindableEvent');
+		}
+
+		function SettingsElements:AddConnection(Type, Callback)
+			if typeof(Type) ~= "RBXScriptSignal" then
+				error("[AddConnection] Invalid Type: Expected RBXScriptSignal, got " .. typeof(Type))
+			end
+			if typeof(Callback) ~= "function" then
+				error("[AddConnection] Invalid Callback: Expected function, got " .. typeof(Callback))
+			end
+
+			local Connection = Type:Connect(Callback)
+			local ConnectionData = { Connection = Connection }
+
+			SettingsElements.Connections = SettingsElements.Connections or {}
+			table.insert(SettingsElements.Connections, ConnectionData)
+
+			local function Disconnect()
+				if Connection.Connected then
+					Connection:Disconnect()
+				end
+
+				for i = #SettingsElements.Connections, 1, -1 do
+					if SettingsElements.Connections[i] == ConnectionData then
+						table.remove(SettingsElements.Connections, i)
+						break
+					end
+				end
+			end
+
+			task.spawn(function()
+				task.wait(10)
+				for i = #SettingsElements.Connections, 1, -1 do
+					if not SettingsElements.Connections[i].Connection.Connected then
+						table.remove(SettingsElements.Connections, i)
+					end
+				end
+			end)
+
+			return Connection, Disconnect
+		end
+
+		function SettingsElements:GetSettingsElements()
+			local element = {}
+
+			function element:CreateButton(Button, Parent)
+				local ButtonData = {
+					Title = Button.Title or "Temp Button";
+					CallBack = Button.CallBack;
+					Desc = Button.Description or "";
+					Type = Button.Type or 'Default';
+					HoldTime = Button.HoldTime or 3;
+				}
+
+				local button = Library.Settings.Button:Clone()
+				button.Visible = true
+				button.Parent = Parent
+				button.Title.Text = Button.Title
+				button.Name = ButtonData.Title
+				button.Title.Size = UDim2.new(0, button.Title.TextBounds.X + 15,0, 35)
+
+
+				local fOTween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
+				local fITween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
+
+				if ButtonData.Type == 'Default' then
+					-- UI Stroke effect on button press
+
+					button.interact.MouseButton1Down:Connect(function()
+						tweenservice:Create(button.UIStroke, fOTween, { Transparency = 1 }):Play()
+						tweenservice:Create(button.ImageLabel, fOTween, { ImageTransparency = 1 }):Play()
+						tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+					end)
+
+					button.interact.MouseButton1Up:Connect(function()
+						tweenservice:Create(button.UIStroke, fITween, { Transparency = 0 }):Play()
+						tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
+
+
+					end)
+
+					button.interact.MouseButton1Click:Connect(function()
+						if ButtonData.CallBack then
+							local success, errorMsg = pcall(ButtonData.CallBack)
+							if not success then
+								warn("[CALLBACK ERROR]:", errorMsg)
+							end
+						else
+							warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
+						end
+					end)
+
+					-- Extra Check 
+					button.interact.MouseLeave:Connect(function()
+						tweenservice:Create(button.UIStroke, fITween, { Transparency = 0 }):Play()
+						tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
+					end)
+				elseif ButtonData.Type == 'Hold' then
+					local HoldTime = ButtonData.HoldTime
+					local Holding = false
+					local TimeLeft = HoldTime
+					local Complete = false
+
+					button.ImageLabel.Image = 'rbxassetid://127075195365098'
+					button.ImageLabel.Rotation = 0
+					button.ImageLabel.Size = UDim2.new(0, 16,0, 16)
+					button.ImageLabel.Position = UDim2.new(1, -41,0.5, 0)
+
+					local function CancelOperation()
+						Holding = false
+						tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 0.95 }):Play()
+						tweenservice:Create(button.Title.Timer, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+						if not Complete then
+							tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 1 }):Play()
+							tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
+							tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,-15 ,0 ,button.Position.Y.Offset) }):Play()
+							task.wait(0.15)
+							tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,30 ,0 ,button.Position.Y.Offset) }):Play()
+							task.wait(0.15)
+							tweenservice:Create(button, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { Position = UDim2.new(0 ,0 ,0 ,button.Position.Y.Offset) }):Play()
+							task.wait(1)
+							tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 0 }):Play()
+						end
+
+						-- did not complete 
+
+						--	button.UIStroke.UIGradient.Offset = Vector2.new(-1, 0)
+						--	tweenservice:Create(button.UIStroke, TweenInfo.new(HoldTime, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
+
+						-- Restore the timer value
+						TimeLeft = HoldTime
+						button.Title.Timer.Text = tostring(HoldTime)
+						task.wait(0.1)
+						Complete = false
+					end
+
+					button.interact.MouseButton1Down:Connect(function()
+
+						Holding = true
+						TimeLeft = HoldTime
+						button.Title.Timer.Text = tostring(TimeLeft)
+						tweenservice:Create(button.ImageLabel, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+						tweenservice:Create(button.Title.Timer, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+						tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(HoldTime, Enum.EasingStyle.Linear), { Offset = Vector2.new(0.7, 0) }):Play()
+						tweenservice:Create(button.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), { Transparency = 0}):Play()
+
+						-- Countdown loop
+						while Holding and TimeLeft > 0 do
+							TimeLeft = math.max(0, TimeLeft - runservice.Heartbeat:Wait()) -- Ensures it doesn't go below 0
+							button.Title.Timer.Text = string.format("%.1f", TimeLeft) -- Always shows at least 0.0
+
+						end
+
+						if TimeLeft <= 0 then
+							Complete = true
+							if ButtonData.CallBack then
+								local success, errorMsg = pcall(ButtonData.CallBack)
+								if not success then
+									warn("[CALLBACK ERROR]:", errorMsg)
+								end
+							else
+								warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
+							end
+							tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }):Play()
+							tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(0.1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
+							task.wait(0.34)
+							tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(17, 17, 17) }):Play()
+						end
+					end)
+
+					button.interact.MouseButton1Up:Connect(function()
+						CancelOperation()
+					end)
+
+					button.interact.MouseLeave:Connect(function()
+						if Holding then
+							CancelOperation()
+						end
+					end)
+				end
+
+				--[DESC]
+				local descLabel = button:FindFirstChild("Desc")
+
+				if descLabel then
+					if ButtonData.Desc and ButtonData.Desc ~= "" then
+						descLabel.Text = ButtonData.Desc
+						descLabel.Visible = true
+						descLabel.TextWrapped = true
+
+						local function updateSize()
+							local textSize = textservice:GetTextSize(
+								descLabel.Text,
+								descLabel.TextSize,
+								descLabel.Font,
+								Vector2.new(descLabel.AbsoluteSize.X, math.huge) -- Allows vertical expansion
+							)
+
+							local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
+							local newButtonSize = UDim2.new(button.Size.X.Scale, button.Size.X.Offset, 0, button.Title.Size.Y.Offset + textSize.Y + 5) -- Adding extra padding
+
+							local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
+							descTween:Play()
+
+							local buttonTween = tweenservice:Create(button, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
+							buttonTween:Play()
+						end
+
+						updateSize()
+
+						descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+					else
+						descLabel.Visible = false
+					end
+				end
+
+
+			end
+
+			---
+
+			function element:ColorPicker(ColorPicker, Parent)
+				local ColorPickerData = {
+					Title = ColorPicker.Title;
+					Color = ColorPicker.Color;
+					Linkable = ColorPicker.Linkable;
+					CallBack = ColorPicker.CallBack;
+				}
+
+				ColorPicker.Linkable = ColorPicker.Linkable or true
+
+				local colorpicker = Library.Settings.ColorPicker:Clone()
+				colorpicker.Visible = true
+				colorpicker.Parent = Parent
+				colorpicker.Title.Text = ColorPickerData.Title
+				colorpicker.Name = ColorPickerData.Title
+
+				local isLinkable = Instance.new("BoolValue")
+				isLinkable.Name = 'isLinkable'
+				isLinkable.Value = ColorPickerData.Linkable
+				isLinkable.Parent = colorpicker
+
+				local HueSat = Instance.new("Color3Value")
+				HueSat.Name = 'HueSat'
+				HueSat.Value = ColorPickerData.Color
+				HueSat.Parent = colorpicker
+
+				local Open = false
+				local DeBounce = false
+				local State = false
+
+				colorpicker.color.Values.Hue.BackgroundTransparency = 1
+				colorpicker.color.Values.Hue.Pin.BackgroundTransparency = 1
+				colorpicker.color.Values.Hue.Pin.UIStroke.Transparency = 1
+				colorpicker.color.Values.Rainbow.ImageTransparency = 1
+
+				colorpicker.color.SVPicker.Pin.BackgroundTransparency = 1
+				colorpicker.color.SVPicker.Pin.UIStroke.Transparency = 1
+				colorpicker.color.SVPicker.Brightness.BackgroundTransparency = 1
+				colorpicker.color.SVPicker.Saturation.BackgroundTransparency = 1
+
+				colorpicker.HueValues.HEX.BackgroundTransparency = 1
+				colorpicker.HueValues.HEX.UIStroke.Transparency = 1
+				colorpicker.HueValues.HEX.V.HEXBox.TextTransparency = 1
+				colorpicker.HueValues.HEX.Link.ImageTransparency = 1
+				colorpicker.HueValues.HEX.Copy.ImageTransparency = 1
+
+				colorpicker.HueValues.RGB.BackgroundTransparency = 1
+				colorpicker.HueValues.RGB.UIStroke.Transparency = 1
+				colorpicker.HueValues.RGB.V.RGBBox.TextTransparency = 1
+				colorpicker.HueValues.RGB.Copy.ImageTransparency = 1
+				colorpicker.QuickClose.Interactable = false
+				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundColor3 = ColorPickerData.Color }):Play()
+
+				local recentContainer = colorpicker.color.Recent
+				local spacing = 5
+				local frameSize = 12 
+
+				local function updateRecentLayout()
+					local children = {} 
+					for _, child in pairs(recentContainer:GetChildren()) do
+						if child:IsA("Frame") then
+							table.insert(children, child)
+						end
+					end
+
+					table.sort(children, function(a, b)
+						return a.LayoutOrder > b.LayoutOrder 
+					end)
+
+					-- Calculate total width needed
+					local totalWidth = #children * frameSize + math.max(#children - 1, 0) * spacing
+					local startX = recentContainer.AbsoluteSize.X - totalWidth 
+
+					for _, frame in ipairs(children) do
+						--	frame.Position = UDim2.new(0, startX, 0.5, -frame.Size.Y.Offset / 2)
+						tweenservice:Create(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(0, startX , 0.8, -frame.Size.Y.Offset / 2) }):Play()
+						startX += frameSize + spacing
+					end
+				end
+
+				recentContainer.ChildAdded:Connect(function(child)
+					if child:IsA("Frame") then
+						child.LayoutOrder = os.time() 
+						updateRecentLayout()
+					end
+				end)
+				recentContainer.ChildRemoved:Connect(updateRecentLayout)
+				updateRecentLayout()
+
+				local HSV
+
+				if ColorPickerData.Color then
+					HSV = { ColorPickerData.Color:ToHSV() }
+				else
+
+					HSV = { 0, 0, 0 }
+				end
+				local Selected = ColorPickerData.Color
+				local HueValue = HSV[1]
+
+				local function TableToColor(Table)
+					if type(Table) ~= "table" then return Table end
+					return Color3.fromHSV(Table[1],Table[2],Table[3])
+				end
+
+				local function FormatColor(Color, format, precision)
+
+					format = format or "RGB"
+					precision = precision or 2
+
+					local formattedColor = ""
+
+					if format == "RGB" then
+						return	math.round(Color.R * 255) .. "," .. math.round(Color.G * 255) .. "," .. math.round(Color.B * 255)
+					elseif format == "Hex" then
+						formattedColor = string.format("#%02X%02X%02X",
+							math.round(Color.R * 255),
+							math.round(Color.G * 255),
+							math.round(Color.B * 255)
+						)
+
+						return formattedColor
+					end
+				end
+
+				local SVPicker = colorpicker.color.SVPicker
+				local HUESlider = colorpicker.color.Values.Hue
+
+				SVPicker.Pin.BackgroundColor3 = ColorPickerData.Color
+				HUESlider.Pin.BackgroundColor3 = ColorPickerData.Color
+
+				local function updatestuff()
+					ColorPickerData.Color = TableToColor(HSV)
+					colorpicker.color.BackgroundColor3 = ColorPickerData.Color
+					colorpicker.color.glow.ImageColor3 = ColorPickerData.Color
+
+					colorpicker.color.BackgroundColor3 = Color3.fromHSV(HSV[1], 1, 1)
+					local newColor = Color3.fromHSV(HSV[1], HSV[2], HSV[3])
+					local newColor2 = Color3.fromHSV(HSV[1], 1, 1)
+
+					HueSat.Value = ColorPickerData.Color
+
+					tweenservice:Create(HUESlider.Pin, TweenInfo.new(0.1, Enum.EasingStyle.Exponential), {BackgroundColor3 = newColor2}):Play()
+					tweenservice:Create(SVPicker.Pin, TweenInfo.new(0.1, Enum.EasingStyle.Exponential), {BackgroundColor3 = newColor}):Play()
+
+
+					tweenservice:Create(SVPicker.Pin, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						Position = UDim2.new(HSV[2], 0, 1 - HSV[3], 0)
+					}):Play()
+
+					tweenservice:Create(HUESlider.Pin, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						Position = UDim2.new(1 - HSV[1], 0, 0.5, 0)
+					}):Play()
+
+					local formattedHex = FormatColor(ColorPickerData.Color, 'Hex')
+					colorpicker.HueValues.HEX.V.HEXBox.PlaceholderText = formattedHex
+
+					local formattedRGB = FormatColor(ColorPickerData.Color,'RGB', 2)
+					colorpicker.HueValues.RGB.V.RGBBox.PlaceholderText = formattedRGB
+
+					if ColorPickerData.CallBack then
+						ColorPickerData.CallBack(ColorPickerData.Color)
+					end
+				end
+				updatestuff()
+
+				local newColor = Color3.fromHSV(HSV[1], HSV[2], HSV[3])
+
+				local function OpenPicker()
+					Open = true
+					DeBounce = true
+					colorpicker.color.Values.Visible = true
+					colorpicker.color.SVPicker.Visible = true
+					colorpicker.HueValues.Visible = true
+					colorpicker.color.Recent.Visible = true
+
+					colorpicker.interact.Interactable = false
+					colorpicker.QuickClose.Interactable = true
+
+					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.95, Enum.EasingStyle.Quart ), { Size = UDim2.new(0, 1,0, 1) }):Play()
+					tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(35, 35, 35) }):Play()
+					tweenservice:Create(colorpicker.color, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromHSV(HSV[1], 1, 1) }):Play()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					task.wait(0.12)
+					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.9, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -200,0, 120) }):Play()
+					tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(18, 18, 18) }):Play()
+					tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -15,0, 180) }):Play()
+					tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
+					task.wait(0.6)
+
+					tweenservice:Create(colorpicker.color.SVPicker.Brightness, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Saturation, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Pin, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Pin.UIStroke, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { Transparency = 0.58 }):Play()
+
+					task.wait(0.5)
+					tweenservice:Create(colorpicker.color.Values.Hue, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Hue.Pin, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Hue.Pin.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.58 }):Play()
+
+					tweenservice:Create(colorpicker.HueValues.HEX, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0.9 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.4 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.V.HEXBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
+
+					task.wait(0.09)
+					tweenservice:Create(colorpicker.HueValues.RGB, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0.9 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 0.4 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.V.RGBBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0 }):Play()
+
+					for _,v in ipairs(colorpicker.color.Recent:GetChildren()) do
+						if v:IsA('Frame') then
+							task.wait(0.1)
+							tweenservice:Create(v, TweenInfo.new( 0.3, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+						end
+					end
+
+					task.wait(0.7)
+					DeBounce = false
+				end
+
+
+				colorpicker.interact.MouseButton1Click:Connect(function()
+					if DeBounce then return end
+					if not Open then
+						Open = true
+						OpenPicker()
+					end
+				end)
+
+				colorpicker.QuickClose.MouseEnter:Connect(function()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 70,0, 3) }):Play()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+				end)
+
+				colorpicker.QuickClose.MouseLeave:Connect(function()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 60,0, 3) }):Play()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(33, 33, 33) }):Play()
+				end)
+
+				local function ClosePicker()
+					Open = false
+					DeBounce = true
+					tweenservice:Create(colorpicker, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(1, -40,0, 40) }):Play()
+					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 20,0, 20) }):Play()
+					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundColor3 = ColorPickerData.Color }):Play()
+					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					colorpicker.interact.Interactable = true
+					colorpicker.QuickClose.Interactable = false
+
+					--	task.wait(0.6)
+
+					tweenservice:Create(colorpicker.color.SVPicker.Brightness, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Saturation, TweenInfo.new( 2, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Pin, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.SVPicker.Pin.UIStroke, TweenInfo.new( 0.4, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Hue, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Hue.Pin, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Hue.Pin.UIStroke, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
+
+					tweenservice:Create(colorpicker.HueValues.RGB, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.V.RGBBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.RGB.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
+
+					task.wait(0.1)
+
+					tweenservice:Create(colorpicker.HueValues.HEX, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.UIStroke, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { Transparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.V.HEXBox, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { TextTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.HueValues.HEX.Copy, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1 }):Play()
+					for _,v in ipairs(colorpicker.color.Recent:GetChildren()) do
+						if v:IsA('Frame') then
+							tweenservice:Create(v, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+						end
+					end
+					task.wait(1)
+					colorpicker.color.SVPicker.Visible = false
+					colorpicker.color.Recent.Visible = false
+					task.wait(0.7)
+					DeBounce = false
+				end
+
+				colorpicker.QuickClose.MouseButton1Click:Connect(function()
+					if DeBounce then return end
+					if Open then
+						Open = false
+						ClosePicker()
+					end
+				end)
+
+				local function AddRecentColor(newColor)
+					local recentFrame = colorpicker.colorPlaceHolder:Clone()
+					recentFrame.Visible = true
+					recentFrame.Parent = colorpicker.color.Recent
+					recentFrame.BackgroundColor3 = newColor
+
+					recentFrame.interact.MouseButton1Click:Connect(function()
+				--[[	tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 5,0, 5) }):Play()
+					task.wait(0.09)
+					tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 12,0, 12) }):Play() ]]
+
+						local h, s, v = newColor:ToHSV()
+						if s > 0.02 then
+							HSV[1] = h
+						end
+						HSV[2] = s
+						HSV[3] = v
+						updatestuff()
+
+					end)
+
+					recentFrame.interact.MouseEnter:Connect(function()
+						tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 20,0, 20) }):Play()
+					end)
+
+					recentFrame.interact.MouseLeave:Connect(function()
+						tweenservice:Create(recentFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 12,0, 12) }):Play()
+					end)
+
+					local maxRecentColors = 10
+					local recentContainer = colorpicker.color.Recent
+
+					local children = recentContainer:GetChildren()
+					if #children > maxRecentColors then
+						for _, child in ipairs(children) do
+							if child:IsA("Frame") then
+								child:Destroy()
+								break
+							end
+						end
+					end
+				end
+
+				local SV, HUE = nil, nil
+
+				syde:AddConnection(SVPicker.InputBegan, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						SV = runservice.RenderStepped:Connect(function()
+							local mouse = game.Players.LocalPlayer:GetMouse()
+							local ColorX = math.clamp(mouse.X - SVPicker.AbsolutePosition.X, 0, SVPicker.AbsoluteSize.X) / SVPicker.AbsoluteSize.X
+							local ColorY = math.clamp(mouse.Y - SVPicker.AbsolutePosition.Y, 0, SVPicker.AbsoluteSize.Y) / SVPicker.AbsoluteSize.Y
+
+							HSV[2] = ColorX
+							HSV[3] = 1 - ColorY
+
+							updatestuff()
+						end)
+					end
+				end)
+
+				syde:AddConnection(SVPicker.InputEnded, function(i)
+					if i.UserInputType == Enum.UserInputType.MouseButton1 and SV then
+						SV:Disconnect()
+						SV = nil
+						AddRecentColor(ColorPickerData.Color)
+					end
+				end)
+
+				syde:AddConnection(HUESlider.InputBegan, function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						HUE = runservice.RenderStepped:Connect(function()
+							local mouse = game.Players.LocalPlayer:GetMouse()
+							local ColorX = math.clamp(mouse.X - HUESlider.AbsolutePosition.X, 0, HUESlider.AbsoluteSize.X) / HUESlider.AbsoluteSize.X
+
+							HSV[1] = 1 - ColorX
+
+							updatestuff()
+						end)
+					end
+				end)
+
+				syde:AddConnection(HUESlider.InputEnded, function(i)
+					if i.UserInputType == Enum.UserInputType.MouseButton1 and HUE then
+						HUE:Disconnect()
+						HUE = nil
+						AddRecentColor(ColorPickerData.Color)
+					end
+				end)
+
+				colorpicker.HueValues.HEX.V.HEXBox.FocusLost:Connect(function(Enter)
+					if not Enter then return end
+
+					local hexInput = colorpicker.HueValues.HEX.V.HEXBox.Text
+
+					local success, result = pcall(function()
+						return Color3.fromHex(hexInput)
+					end)
+
+					if success then
+						local Hue, Saturation, Value = result:ToHSV()
+						colorpicker.HueValues.HEX.V.HEXBox.Text = ''
+						if Saturation > 0.02 then
+							HSV[1] = Hue
+						end
+						HSV[2] = Saturation
+						HSV[3] = Value
+						updatestuff()
+					else
+						warn("Failed to convert hex to color:", result)
+					end
+				end)
+
+				colorpicker.HueValues.RGB.V.RGBBox.FocusLost:Connect(function(Enter)
+					if not Enter then return end
+
+					local rgbInput = colorpicker.HueValues.RGB.V.RGBBox.Text
+
+					local r, g, b = rgbInput:match("^(%d+),%s*(%d+),%s*(%d+)$")
+
+					if r and g and b then
+
+						r, g, b = tonumber(r), tonumber(g), tonumber(b)
+
+						if r >= 0 and r <= 255 and g >= 0 and g <= 255 and b >= 0 and b <= 255 then
+							local color = Color3.fromRGB(r, g, b)
+
+							local Hue, Saturation, Value = color:ToHSV()
+							if Saturation > 0.02 then
+								HSV[1] = Hue
+							end
+							HSV[2] = Saturation
+							HSV[3] = Value
+
+							colorpicker.HueValues.RGB.V.RGBBox.Text = ''
+							updatestuff()
+						else
+							warn("RGB values must be between 0 and 255.")
+						end
+					else
+						warn("Invalid RGB format. Please use the format 'R,G,B' (e.g., 16,16,16).")
+					end
+				end)
+
+				local UserInputService = game:GetService("UserInputService")
+				local TweenService = game:GetService("TweenService")
+				local RunService = game:GetService("RunService")
+
+				local linkDragging = false
+				local originalPosition = UDim2.new(1, -10, 0.5, 0)
+				local draggedColorPicker = nil
+
+				local function isMouseOver(guiObject)
+					local mouse = game.Players.LocalPlayer:GetMouse()
+					local pos = guiObject.AbsolutePosition
+					local size = guiObject.AbsoluteSize
+					return mouse.X >= pos.X and mouse.X <= pos.X + size.X and mouse.Y >= pos.Y and mouse.Y <= pos.Y + size.Y
+				end
+
+				colorpicker.HueValues.HEX.Link.MouseButton1Down:Connect(function()
+					linkDragging = true
+					draggedColorPicker = colorpicker
+
+					TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+					TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 20,0, 20)}):Play()
+
+					local followMouse
+					followMouse = RunService.RenderStepped:Connect(function()
+						if not linkDragging then
+							followMouse:Disconnect()
+							return
+						end
+						local mouse = game.Players.LocalPlayer:GetMouse()
+						colorpicker.HueValues.HEX.Link.Position = UDim2.new(0, mouse.X - colorpicker.AbsolutePosition.X - 10, 0, mouse.Y - colorpicker.AbsolutePosition.Y - 100)
+
+						for _, otherPicker in pairs(Parent:GetChildren()) do
+							if otherPicker:IsA("Frame") and otherPicker:FindFirstChild("isLinkable") and otherPicker.isLinkable.Value then
+								if isMouseOver(otherPicker) and otherPicker ~= draggedColorPicker then
+									TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+								else
+									TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+								end
+							end
+						end
+					end)
+				end)
+
+				UserInputService.InputEnded:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 and linkDragging then
+						linkDragging = false
+						local foundTarget = false
+
+						for _, otherPicker in pairs(Parent:GetChildren()) do
+							if otherPicker:IsA("Frame") and otherPicker:FindFirstChild("isLinkable") and otherPicker.isLinkable.Value then
+								if isMouseOver(otherPicker) and otherPicker ~= draggedColorPicker then
+									otherPicker.HueSat.Value = draggedColorPicker.HueSat.Value
+									updatestuff() 
+									foundTarget = true
+									TweenService:Create(
+										colorpicker.HueValues.HEX.Link,
+										TweenInfo.new(0.3, Enum.EasingStyle.Quint),
+										{ Position = originalPosition }
+									):Play()
+
+									TweenService:Create(otherPicker.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+									TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(66, 66, 66)}):Play()
+									TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 15,0, 15)}):Play()
+									break
+								end
+							end
+						end
+
+						if not foundTarget then
+							TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {ImageColor3 = Color3.fromRGB(66, 66, 66)}):Play()
+							TweenService:Create(colorpicker.HueValues.HEX.Link, TweenInfo.new(0.5, Enum.EasingStyle.Exponential) , {Size = UDim2.new(0, 15,0, 15)}):Play()
+							TweenService:Create(
+								colorpicker.HueValues.HEX.Link,
+								TweenInfo.new(0.3, Enum.EasingStyle.Quint),
+								{ Position = originalPosition }
+							):Play()
+						end
+					end
+				end)
+
+				local function updateColorPicker()
+					local Hue, Saturation, Value = HueSat.Value:ToHSV()
+
+					if Saturation > 0.02 then
+						HSV[1] = Hue
+					end
+					HSV[2] = Saturation
+					HSV[3] = Value
+
+					updatestuff()
+				end
+
+				HueSat.Changed:Connect(updateColorPicker)
+
+				local hueIncrement = 0.005 
+
+				local function RainbowEffect()
+					HueValue = (HueValue + hueIncrement) % 1
+					HSV[1] = HueValue
+
+					updatestuff()
+				end
+
+				local isRainbowEnabled = false
+				local huerender = nil
+
+				local function ToggleRainbowEffect()
+					isRainbowEnabled = not isRainbowEnabled
+					if isRainbowEnabled then
+						if not huerender then
+							huerender = runservice.RenderStepped:Connect(RainbowEffect)
+							tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new(0.5, Enum.EasingStyle.Exponential ), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+						end
+					else
+						if huerender then
+							huerender:Disconnect()
+							tweenservice:Create(colorpicker.color.Values.Rainbow, TweenInfo.new(0.5, Enum.EasingStyle.Exponential ), {ImageColor3 = Color3.fromRGB(62, 62, 62)}):Play()
+							huerender = nil
+						end
+					end
+				end
+
+				colorpicker.color.Values.Rainbow.MouseButton1Click:Connect(ToggleRainbowEffect)
+
+			end
+
+			---
+
+			function element:Section(Title, Parent, Icon)
+				local SectionData = {
+					Title = Title
+				}
+
+				local Section =  Library.Settings.Section:Clone()
+				Section.Visible = true
+				Section.Title.Text = Title
+				Section.Parent = Parent
+				Section.Title.Position = UDim2.new(0, 0,0, 0)
+
+				if Icon then
+					Section.icon.Image = 'rbxassetid://'..Icon
+					Section.Title.Position = UDim2.new(0, 25,0, 0)
+				else
+					Section.icon.Visible = false
+				end
+			end
+
+			function element:Paragraph(Paragraph, Parent)
+				local ParaData = {
+					Title = Paragraph.Title;
+					Content = Paragraph.Content;
+				}
+
+				local Para = Library.Settings.Paragraph:Clone()
+				Para.Visible = true
+				Para.Parent = Parent
+				Para.Title.Text = ParaData.Title
+				Para.Content.Text = ParaData.Content
+
+				Para.Content.Size = UDim2.new(1, -20, 0, Para.Content.TextBounds.Y)
+				Para.Size = UDim2.new(1, -15, 0, Para.Content.Size.Y.Offset + 45)
+
+				local function updateSize()
+					local textSize = textservice:GetTextSize(
+						Para.Content.Text,
+						Para.Content.TextSize,
+						Para.Content.Font,
+						Vector2.new(Para.Content.AbsoluteSize.X, math.huge) -- Allows vertical expansion
+					)
+
+					local newDescSize = UDim2.new(1, -20, 0, textSize.Y)
+					local newButtonSize = UDim2.new(Para.Size.X.Scale, Para.Size.X.Offset, 0, textSize.Y + 40) -- Adding extra padding
+
+					local descTween = tweenservice:Create(Para.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
+					descTween:Play()
+
+					local buttonTween = tweenservice:Create(Para, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
+					buttonTween:Play()
+				end
+
+				updateSize()
+
+				Para.Content:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+
+				local ParagraphSettings = {}
+
+				function ParagraphSettings:Set(text)
+					Para.Content.Text = text
+				end
+
+				ParagraphSettings.Instance = Para
+
+				return ParagraphSettings
+
+			end
+
+			function element:CreateSlider(Slider, Parent)
+				local SliderData = {
+					Title = Slider.Title;
+					Desc = Slider.Description;
+					Sliders = Slider.Sliders
+				}
+
+				local slider = Library.Settings.Slider:Clone()
+				slider.Visible = true
+				slider.Parent = Parent
+				slider.Title.Text = SliderData.Title
+				slider.Name = SliderData.Title
+				slider.slideholder.slider.Visible = false
+
+
+				--[SLIDERS INITIALIZE]
+				for _, Options in ipairs(SliderData.Sliders) do
+					local Slider =  Library.Settings.Slider.slideholder.slider:Clone()
+
+					Options = {
+						Title = Options.Title or "Slider";
+						Increment = Options.Increment or 1;
+						Range = Options.Range or {0, 100};
+						StarterValue = Options.StarterValue or 16;
+						CallBack = Options.CallBack;
+					}
+
+					Slider.Name = Options.Title
+					Slider.Title.Text = Options.Title
+
+					local dragging = false
+					Slider.Visible = true
+					Slider.Parent = slider.slideholder
+
+					local SliderPosition
+					if Options.StarterValue <= Options.Range[1] then
+						SliderPosition = 0
+					elseif Options.StarterValue >= Options.Range[2] then
+						SliderPosition = 1
+					else
+						local range = Options.Range[2] - Options.Range[1]
+						SliderPosition = (Options.StarterValue - Options.Range[1]) / range
+					end
+
+					--Slider.slide.slideframe:TweenSize(UDim2.new(SliderPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
+					tweenservice:Create(Slider.slide.slideframe, TweenInfo.new(0.55, Enum.EasingStyle.Quint), {Size = UDim2.new(SliderPosition, 0, 1, 0)}):Play()
+
+					local decimalPlaces = tostring(Options.Increment):match("%.([^0]*)") and #tostring(Options.Increment):match("%.([^0]*)") or 0
+					Slider.v.Text = string.format("<font size='14'>%." .. decimalPlaces .. "f</font><font color='#434343'>/%." .. decimalPlaces .. "f</font>", Options.StarterValue, Options.Range[2])
+
+
+					local function UpdateSlider(x)
+						if dragging then
+							local sliderStart = Slider.slide.AbsolutePosition.X
+							local sliderWidth = Slider.slide.AbsoluteSize.X
+							local sliderPosition = (x - sliderStart) / sliderWidth
+							sliderPosition = math.clamp(sliderPosition, 0, 1)
+
+							local range = Options.Range[2] - Options.Range[1]
+							local newValue = Options.Range[1] + sliderPosition * range
+							newValue = math.floor((newValue - Options.Range[1]) / Options.Increment + 0.5) * Options.Increment + Options.Range[1]
+
+							-- Update the slider visual position
+							local snapPosition = (newValue - Options.Range[1]) / range
+							--	Slider.slide.slideframe:TweenSize(UDim2.new(snapPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.55, true)
+							tweenservice:Create(Slider.slide.slideframe, TweenInfo.new(0.55, Enum.EasingStyle.Quint), {Size = UDim2.new(snapPosition, 0, 1, 0)}):Play()
+
+
+							-- Update the displayed value
+							local decimalPlaces = tostring(Options.Increment):match("%.([^0]*)") and #tostring(Options.Increment):match("%.([^0]*)") or 0
+							Slider.v.Text = string.format("<font size='14'>%." .. decimalPlaces .. "f</font><font color='#434343'>/%." .. decimalPlaces .. "f</font>", newValue, Options.Range[2])
+
+
+							tweenservice:Create(Slider.Title, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+
+							local success, errorMsg = pcall(function()
+								Options.CallBack(newValue)
+							end)
+							if not success then
+								warn("[CALLBACK ERROR][" .. Slider.Name .. "]: " .. tostring(errorMsg))
+							end
+						end
+					end
+
+					Slider.slide.Interact.MouseButton1Down:Connect(function()
+						dragging = true
+					end)
+
+					Slider.slide.Interact.MouseButton1Up:Connect(function()
+						dragging = false
+					end)
+
+
+					SettingsElements:AddConnection(userinput.InputEnded, function(input, processed)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							dragging = false
+							if Slider and Slider:FindFirstChild("Title") then
+								tweenservice:Create(Slider.Title, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { TextTransparency = 0.6 }):Play()
+							end
+						end
+					end)
+
+					SettingsElements:AddConnection(userinput.InputChanged, function(input)
+						if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+							UpdateSlider(input.Position.X)
+						end
+					end)
+
+		--[[Slider.slide.slideframe.BackgroundColor3 = syde.theme.HitBox
+		Slider.slide.slideframe.shadowHolder.ambientShadow.ImageColor3 = syde.theme.HitBox
+		Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = syde.theme.HitBox
+		Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = syde.theme.HitBox]]
+					slider.slideholder.Size = UDim2.new(1,-30,0,slider.slideholder.UIListLayout.AbsoluteContentSize.Y)
+					slider.Size = UDim2.new(1,-40,0,slider.slideholder.AbsoluteSize.Y + 55)
+
+		--[[syde:AddConnection(syde.Comms.Event, function(p, color)
+			if p == 'HitBox' then
+				Slider.slide.slideframe.BackgroundColor3 = color
+				Slider.slide.slideframe.shadowHolder.ambientShadow.ImageColor3 = color
+				Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = color
+				Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = color
+			end
+		end)]]
+				end
+
+				--[DESC]
+				local descLabel = slider.slideholder:FindFirstChild("Desc")
+
+				if descLabel then
+					if SliderData.Desc and SliderData.Desc ~= "" then
+						descLabel.Text = SliderData.Desc
+						descLabel.Visible = true
+						descLabel.TextWrapped = true
+
+						local function updateSize()
+							local textSize = textservice:GetTextSize(
+								descLabel.Text,
+								descLabel.TextSize,
+								descLabel.Font,
+								Vector2.new(descLabel.AbsoluteSize.X, math.huge) -- Allows vertical expansion
+							)
+
+							local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
+							local newButtonSize = UDim2.new(slider.Size.X.Scale, slider.Size.X.Offset, 0,slider.slideholder.AbsoluteSize.Y + slider.Title.Size.Y.Offset + textSize.Y - 5) -- Adding extra padding
+
+							local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
+							descTween:Play()
+
+							local ToggleTween = tweenservice:Create(slider, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
+							ToggleTween:Play()
+						end
+
+						updateSize()
+
+						descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+					else
+						descLabel.Visible = false
+					end
+				end
+
+
+			end
+
+			function element:Keybind(Keybind, Parent)
+				local KeybindData = {
+					Title = Keybind.Title;
+					Key = Keybind.Key;
+					Desc = Keybind.Description or "";
+					CallBack = Keybind.CallBack;
+					WaitingForKey = false;
+					Hold = false;
+					Holding = false
+				}
+
+				print('made keybind')
+
+				local KeyBind = Library.Settings.KeyBind:Clone()
+				KeyBind.Visible = true
+				KeyBind.Parent = Parent
+				KeyBind.Title.Text = KeybindData.Title
+				KeyBind.Name = KeybindData.Title
+
+				KeyBind.Bind.v.Text = KeybindData.Key and KeybindData.Key.Name or "NONE"
+				tweenservice:Create(KeyBind.Bind, TweenInfo.new(0.55, Enum.EasingStyle.Quint ), {Size = UDim2.new(0, KeyBind.Bind.v.TextBounds.X + 15, 0, KeyBind.Bind.Size.Y.Offset)}):Play()
+
+				KeyBind.interact.MouseButton1Click:Connect(function()
+					KeyBind.Bind.v.Text = '...'
+					KeybindData.WaitingForKey = true
+				end)
+
+				KeyBind.Bind.v:GetPropertyChangedSignal('TextBounds'):Connect(function()
+					tweenservice:Create(KeyBind.Bind, TweenInfo.new(0.55, Enum.EasingStyle.Quint ), {Size = UDim2.new(0, KeyBind.Bind.v.TextBounds.X + 15, 0, KeyBind.Bind.Size.Y.Offset)}):Play()
+				end)
+
+				-- Utility: Set a keybind (both value and label)
+				local function SetKeybind(keyCode)
+					if keyCode and keyCode ~= Enum.KeyCode.Unknown then
+						KeybindData.Key = keyCode
+						KeyBind.Bind.v.Text = keyCode.Name
+
+						if typeof(Keybind.OnKeyChanged) == "function" then
+							pcall(Keybind.OnKeyChanged, keyCode)
+						end
+					else
+						KeybindData.Key = nil
+						KeyBind.Bind.v.Text = "NONE"
+					end
+				end
+
+				-- Main input handler
+				SettingsElements:AddConnection(userinput.InputBegan, function(input)
+					if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+
+					-- Setup mode: waiting for a new keybind
+					if KeybindData.WaitingForKey then
+						KeybindData.WaitingForKey = false
+						SetKeybind(input.KeyCode)
+						return
+					end
+
+					-- Match against current keybind
+					if input.KeyCode == KeybindData.Key then
+						KeybindData.Hold = true
+
+						-- Hold state monitor
+						local holdConnection
+						holdConnection = input.Changed:Connect(function(prop)
+							if prop == "UserInputState" then
+								local state = input.UserInputState
+								KeybindData.Hold = (state == Enum.UserInputState.Begin)
+								if state == Enum.UserInputState.End and holdConnection then
+									holdConnection:Disconnect()
+								end
+							end
+						end)
+
+						-- Callback logic
+						local success, result = pcall(KeybindData.CallBack, KeybindData.Key)
+						if not KeybindData.Holding then
+							if not success then
+								warn(`[Keybind: {KeyBind.Name}] Callback Error: {result}`)
+							end
+						else
+							if KeybindData.Hold then
+								local holdLoop
+								holdLoop = runservice.RenderStepped:Connect(function()
+									if not KeybindData.Hold then
+										KeybindData.CallBack(false)
+										holdLoop:Disconnect()
+									else
+										KeybindData.CallBack(false)
+									end
+								end)
+							end
+						end
+					end
+				end)
+
+			end
+
+			function element:Toggle(Toggle, Parent)
+				local ToggleData = {
+					Title = Toggle.Title or "Temp Toggle";
+					Desc = Toggle.Description or "";
+					V = Toggle.Value or false;
+					Config = Toggle.Config or false;
+					CallBack = Toggle.CallBack
+				}
+
+				local toggle = Library.Settings.Toggle:Clone()
+				toggle.Visible = true
+				toggle.Parent = Parent
+				toggle.Title.Text = ToggleData.Title
+				toggle.Name = ToggleData.Title
+
+				local toggleConfiguration = UI.Render.ToggleConfiguration:Clone()
+				toggleConfiguration.Parent = UI.Render
+				toggleConfiguration.Visible = false
+
+				toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
+				tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
+
+				toggleConfiguration.BackgroundTransparency = 1
+				toggleConfiguration.Container.KeyBind.Title.TextTransparency = 1
+				toggleConfiguration.Container.KeyBind.Bind.BackgroundTransparency = 1
+				toggleConfiguration.Container.KeyBind.Bind.v.TextTransparency = 1
+				toggleConfiguration.Container.Clear.Title.TextTransparency = 1
+				toggleConfiguration.Container.Clear.clear.ImageLabel.ImageTransparency = 1
+				toggleConfiguration.Size = UDim2.new(0, 75,0, 53)
+
+				if not ToggleData.Config then
+					toggle.Configure:Destroy()
+				end
+
+				local toggleTween = TweenInfo.new(0.7, Enum.EasingStyle.Exponential)
+				local fadeTween = TweenInfo.new(0.57, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+
+				local function UpdateToggleUI(state)
+					local targetColor = state and syde.theme.HitBox or Color3.fromRGB(20, 20, 20)
+					local strokeTransparency = state and 1 or 0
+					local checkTransparency = state and 0 or 1
+					local gradientTransparency = state and 0 or 1
+
+					tweenservice:Create(toggle.tog, toggleTween, { BackgroundColor3 = targetColor }):Play()
+					tweenservice:Create(toggle.tog.UIStroke, toggleTween, { Transparency = strokeTransparency }):Play()
+					tweenservice:Create(toggle.tog.check, toggleTween, { ImageTransparency = checkTransparency }):Play()
+					tweenservice:Create(toggle.tog.gradfr, fadeTween, { BackgroundTransparency = gradientTransparency }):Play()
+				end
+
+				UpdateToggleUI(ToggleData.V)
+
+				toggle.interact.MouseButton1Click:Connect(function()
+					ToggleData.V = not ToggleData.V
+					UpdateToggleUI(ToggleData.V)
+
+					local success, errorMsg = pcall(function()
+						if ToggleData.CallBack then
+							ToggleData.CallBack(ToggleData.V)
+						end
+					end)
+
+					if not success then
+						warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+					end
+				end)
+
+				--[DESC]
+				local descLabel = toggle:FindFirstChild("Desc")
+
+				if descLabel then
+					if ToggleData.Desc and ToggleData.Desc ~= "" then
+						descLabel.Text = ToggleData.Desc
+						descLabel.Visible = true
+						descLabel.TextWrapped = true
+
+						local function updateSize()
+							local textSize = textservice:GetTextSize(
+								descLabel.Text,
+								descLabel.TextSize,
+								descLabel.Font,
+								Vector2.new(descLabel.AbsoluteSize.X, math.huge)
+							)
+
+							local newDescSize = UDim2.new(1, -150, 0, textSize.Y)
+							local newButtonSize = UDim2.new(toggle.Size.X.Scale, toggle.Size.X.Offset, 0, toggle.Title.Size.Y.Offset + textSize.Y + 5) -- Adding extra padding
+
+							local descTween = tweenservice:Create(descLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
+							descTween:Play()
+
+							local ToggleTween = tweenservice:Create(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newButtonSize })
+							ToggleTween:Play()
+						end
+
+						updateSize()
+
+						descLabel:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+					else
+						descLabel.Visible = false
+					end
+				end
+
+
+				-- [CONFIGURATIPON]
+				if ToggleData.Config then
+
+					local State = false
+
+					local enterTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
+					local leaveTween = TweenInfo.new(0.5, Enum.EasingStyle.Exponential)
+
+					toggle.Configure.MouseEnter:Connect(function()
+						tweenservice:Create(toggle.Configure, enterTween, { ImageColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+					end)
+
+					toggle.Configure.MouseLeave:Connect(function()
+						tweenservice:Create(toggle.Configure, leaveTween, { ImageColor3 = Color3.fromRGB(104, 104, 104) }):Play()
+					end)
+
+					local function ToggleConfigOpen()
+						toggleConfiguration.Visible = true
+						State = true
+
+						tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 0 }):Play()
+						tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 186,0, 85) }):Play()
+
+					end
+
+					local function ToggleConfigClose()
+						State = false
+
+						tweenservice:Create(toggleConfiguration, enterTween, { BackgroundTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Title, enterTween, { TextTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, enterTween, { BackgroundTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, enterTween, { TextTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, enterTween, { ImageTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration.Container.Clear.Title, enterTween, { TextTransparency = 1 }):Play()
+						tweenservice:Create(toggleConfiguration, TweenInfo.new(0.7, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 75,0, 53) }):Play()
+
+						task.wait(0.5)
+
+						toggleConfiguration.Visible = false
+
+					end
+
+					local TogService
+					local heldKeys = {} 
+					local debounce1 = false
+
+					local function ToggleConfig()
+						if debounce1 then return end
+						debounce1 = true
+
+						if not toggleConfiguration.Visible then
+							TogService = runservice.RenderStepped:Connect(function()
+								toggleConfiguration:TweenPosition(UDim2.new(0,toggle.Configure.AbsolutePosition.X - 190,0,toggle.Configure.AbsolutePosition.Y + toggle.Configure.AbsoluteSize.Y + 65), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+								if not toggleConfiguration.Visible then
+									TogService:Disconnect()
+								end
+							end)
+							ToggleConfigOpen()
+						else
+							if TogService then TogService:Disconnect() end
+							ToggleConfigClose()
+						end
+
+						task.delay(0.4, function()
+							debounce1 = false
+						end)
+					end
+
+					toggle.Configure.MouseButton1Click:Connect(function()
+						ToggleConfig()
+					end)
+
+					local function ResizeBindFrame()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0, toggleConfiguration.Container.KeyBind.Bind.v.TextBounds.X + 20,0, 28) }):Play()
+					end
+
+					local function setKeybind(key)
+						if not key then
+							toggleConfiguration.Container.KeyBind.Bind.v.Text = 'None'
+							ResizeBindFrame()
+							ToggleData.Keybind = nil
+						else
+							ToggleData.Keybind = key
+							ToggleData.KeybindReady = false
+
+							tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+							toggleConfiguration.Container.KeyBind.Bind.v.Text = key.Name
+							tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(1, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+							ResizeBindFrame()
+
+							task.delay(0.5, function()
+								ToggleData.KeybindReady = true
+							end)
+						end
+					end
+
+					toggleConfiguration.Container.KeyBind.Interact.MouseButton1Click:Connect(function()
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+						task.wait(0.2)
+						toggleConfiguration.Container.KeyBind.Bind.v.Text = "..."
+						tweenservice:Create(toggleConfiguration.Container.KeyBind.Bind.v, TweenInfo.new(0.25, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+						ResizeBindFrame()
+
+
+						local connection
+						connection = userinput.InputBegan:Connect(function(input, processed)
+							if not processed and input.UserInputType == Enum.UserInputType.Keyboard then
+								setKeybind(input.KeyCode)
+								connection:Disconnect()
+							end
+						end)
+					end)
+
+					userinput.InputBegan:Connect(function(input, processed)
+						if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
+							ToggleData.V = not ToggleData.V
+							UpdateToggleUI(ToggleData.V)
+
+							if ToggleData.CallBack then
+								local success, errorMsg = pcall(function()
+									ToggleData.CallBack(ToggleData.V)
+								end)
+								if not success then
+									warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+								end
+							end
+						end
+					end)
+
+					local debounce2 = false
+
+					toggleConfiguration.Container.Clear.Interact.MouseButton1Click:Connect(function()
+						if debounce2 then return end
+						debounce2 = true
+
+						setKeybind(nil)
+
+						local function blink()
+							tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 13 }):Play()
+							task.wait(0.2)
+							tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = -13 }):Play()
+							task.wait(0.2)
+							tweenservice:Create(toggleConfiguration.Container.Clear.clear.ImageLabel, TweenInfo.new(0.25, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
+						end
+
+						blink()
+
+						task.delay(2, function()
+							debounce2 = false
+						end)
+					end)
+
+					toggleConfiguration.Container.Clear.MouseEnter:Connect(function()
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0.9 }):Play()
+					end)
+
+					toggleConfiguration.Container.Clear.MouseLeave:Connect(function()
+						tweenservice:Create(toggleConfiguration.Container.Clear.clear, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					end)
+
+				end
+			end
+
+			return element
+
+		end
+
+		local element = SettingsElements:GetSettingsElements()
+
+		element:Section('Theme', WINDOW.Settings.Pages.Theme.Container, '0')
+
+		element:ColorPicker({
+			Title = 'Accent',
+			Linkable = true,
+			Color = syde.theme.Accent;
+			CallBack = function(v)
+				syde:UpdateTheme({
+					['Accent'] = v
+				})
+			end,
+		}, WINDOW.Settings.Pages.Theme.Container)
+
+
+		element:ColorPicker({
+			Title = 'HitBox',
+			Linkable = true,
+			Color = syde.theme.HitBox;
+			CallBack = function(c)
+				syde:UpdateTheme({
+					['HitBox'] = c
+				})
+			end,
+		}, WINDOW.Settings.Pages.Theme.Container)
+		
+		element:ColorPicker({
+			Title = 'Drop Shadow',
+			Linkable = true,
+			Color = syde.theme.DropShadow;
+			CallBack = function(c)
+				syde:UpdateTheme({
+					['DropShadow'] = c
+				})
+			end,
+		}, WINDOW.Settings.Pages.Theme.Container)
+
+		element:Section('Other', WINDOW.Settings.Pages.Theme.Container, '0')
+
+		element:Keybind({
+			Title = 'Toggle UI',
+			Key = UIToggle,
+			OnKeyChanged = function(newKey)
+				UIToggle = newKey
+			end,
+			CallBack = function()
+				ToggleUI()
+			end,
+		}, WINDOW.Settings.Pages.Theme.Container)
+
+
+		element:CreateSlider({
+			Title = 'Modifiers',
+			Sliders = {
+				{
+					Title = 'Glow Density',
+					Range = {0, 1},
+					Increment = 0.1,
+					StarterValue = WINDOW.Shadow.ImageLabel.ImageTransparency,
+					CallBack = function(v)
+						tweenservice:Create(WINDOW.Shadow.ImageLabel, TweenInfo.new(0.65, Enum.EasingStyle.Exponential), {ImageTransparency = v}):Play()
+					end,
+				},
+				{
+					Title = 'Drag Smoothness',
+					Range = {0, 1},
+					Increment = 0.1,
+					StarterValue = dragSpeed,
+					CallBack = function(v)
+						dragSpeed = v
+					end,
+				},
+			}
+		}, WINDOW.Settings.Pages.Theme.Container)
+
+		element:Toggle({
+			Title = 'LockToScreen',
+			Description = 'Prevents UI from moving off screen.',
+			Value = LockToScreen,
+			CallBack = function (v)
+				LockToScreen = v
+			end
+		}, WINDOW.Settings.Pages.Theme.Container)
+
+
+		element:Paragraph({
+			Title = 'Coming Soon',
+			Content = 'Privacy Options Coming Soon'
+		}, WINDOW.Settings.Pages.Privacy.Container)
+
+		element:Paragraph({
+			Title = 'Status',
+			Content = 'Your Up To Date!'
+		}, WINDOW.Settings.Pages.Info.Container)
+
+		local startTime = tick()
+
+		-- breaks ui may add later
+--[[	local uptimeParagraph = element:Paragraph({
+		Title = 'Session UpTime',
+		Content = 'Calculating...'
+	}, WINDOW.Settings.Pages.Info.Container)
+
+	local function formatTime(seconds)
+		local days = math.floor(seconds / 86400)
+		seconds = seconds % 86400
+		local hours = math.floor(seconds / 3600)
+		seconds = seconds % 3600
+		local minutes = math.floor(seconds / 60)
+		seconds = math.floor(seconds % 60)
+
+		return string.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+	end
+
+	local startTime = tick()
+	
+	local heartbeatConnection
+	heartbeatConnection = runservice.Heartbeat
+	
+	SettingsElements:AddConnection(heartbeatConnection, function()
+		if uptimeParagraph then
+			local uptime = tick() - startTime
+			local formatted = formatTime(uptime)
+			uptimeParagraph:Set("Server Uptime: " .. formatted)
+		else
+			heartbeatConnection:Disconnect()
+		end
+	end)]]
+
+
+	end
 
 	-------------------------------
 
@@ -3458,7 +3719,9 @@ function syde:Init(library)
 				syde:AddConnection(userinput.InputEnded, function(input, processed)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 then
 						dragging = false
-						tweenservice:Create(Slider.Title, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { TextTransparency = 0.6 }):Play()
+						if Slider and Slider:FindFirstChild("Title") then
+							tweenservice:Create(Slider.Title, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { TextTransparency = 0.6 }):Play()
+						end
 					end
 				end)
 
@@ -4646,6 +4909,381 @@ function syde:Init(library)
 	return ldata
 
 end
+
+
+
+syde:Load({
+	Logo = '8508980527',
+	Name = 'Sum Crum Stick',
+	Status = 'Detected',
+	Accent = Color3.fromRGB(255, 234, 79),
+	HitBox = Color3.fromRGB(175, 254, 255),
+	AutoLoad = false,
+	Socials = {
+		{
+			Name = 'Syde';
+			Style = 'Discord';
+			Size = "Large";
+			CopyToClip = true
+		},
+		{
+			Name = 'GitHub';
+			Style = 'GitHub';
+			Size = "Small";
+			CopyToClip = true
+		}
+	},
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = 'since',
+		FileName = "hot"
+	},
+	AutoJoinDiscord = { 
+		Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+		Invite = "CZRZBwPz", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+		RememberJoins = false -- Set this to false to make them join the discord every time they load it up
+	},
+})
+
+
+local state = syde:Init({
+	Title = 'Lavender';
+	SubText = 'Made With 💓 By @SellEssence'
+})
+
+
+local a = state:InitTab('Main')
+local b = state:InitTab('AutoFarms')
+local c = state:InitTab('Fun')
+local d = state:InitTab('Esp')
+local e = state:InitTab('FE')
+
+b:Button({
+	Title = 'I am a button',
+	CallBack = function()
+		print('sense')
+		syde:Notify({
+			Title = 'heyy',
+			Content = 'woiejf',
+			Duration = 0.5
+		})
+
+	end,
+})
+b:Button({
+	Title = 'I am a button 2',
+	Description = "Hold me",
+	Type = 'Hold',
+	HoldTime = 2,
+	CallBack = function()
+		print('sense')
+		syde:Notify({
+			Title = 'Button Held Goid',
+			Content = 'Hey Baby This is a pretty long paragraph jus to ttext the sizing with the notifs how is it'
+		})
+	end,
+})
+
+b:Keybind({
+	Title = 'ije',
+	Key = Enum.KeyCode.W;
+	CallBack = function()
+		print('r')
+	end,
+})
+
+
+b:Section('Random', '8932620770')
+
+b:Paragraph({
+	Title = "A Paragraph Titlee",
+	Content = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ips'
+})
+
+b:Button({
+	Title = 'I am a button 4',
+	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
+	CallBack = function()
+		syde:Notify({
+			Title = 'Button Held Goid',
+			Content = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
+		})
+	end,
+})
+
+d:Button({
+	Title = 'I am a button 3',
+	Description = 'I ALSO HAVE A DESCRIPTION BUT ITS WAYYY LONGER THAN BUTTON 2 LOL, I ALOS WRAP SO TAK THAT',
+	CallBack = function()
+		print('sense')
+		d:Button({
+			Title = 'I am a button 3',
+			CallBack = function()
+				print('sense')
+			end,
+		})
+	end,
+})
+
+b:Img({
+	Image = '81860879400335'
+})
+
+b:Toggle({
+	Title = 'Gay',
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:Toggle({
+	Title = 'Gay Toggle',
+	Value = true,
+	Config = true,
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:Section('Inputs', '8932620770')
+
+b:TextInput({
+	Title = 'Gimmie Your Token (50 Max)_',
+	PlaceHolder = 'Your Token...',
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:Img({
+	Image = '1403980926'
+})
+
+b:TextInput({
+	Title = 'Gimmie Your Token (100 Max)_',
+	MaxSize = 100,
+	PlaceHolder = 'Your Token...',
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+c:TextInput({
+	Title = 'Gimmie Your Token (100 Max)_',
+	MaxSize = 100,
+	PlaceHolder = 'Your Token...',
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:TextInput({
+	Title = 'Gimmie Your Token (1000 Max)_ with desc',
+	MaxSize = 1000,
+	PlaceHolder = 'Your Token...',
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:TextInput({
+	Title = 'Player Speed',
+	PlaceHolder = 'Enter Speed',
+	NumberOnly = true,
+	ClearOnLost = false,
+	CallBack = function(v)
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v 
+	end,
+})
+
+b:Section('Colorpicker')
+
+b:ColorPicker({
+	Title = 'Ball Hair',
+	Linkable = true,
+	Color = Color3.fromRGB(0, 38, 255);
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:ColorPicker({
+	Title = 'Link Me To Ball Hair',
+	Linkable = true,
+	Color = Color3.fromRGB(105, 149, 182);
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:ColorPicker({
+	Title = 'Ball Hair but im not linkable i dont like any other colros',
+	Linkable = false,
+	Color = Color3.fromRGB(183, 0, 255);
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:Section('Misc')
+
+b:Toggle({
+	Title = 'Gay Toggle',
+	Description = 'Im also a gay toggle but this a descriptiton i wuld recommend not putting it to long',
+	Config = true,
+	CallBack = function(v)
+		print(v)
+	end,
+})
+
+b:CreateSlider({
+	Title = 'Mods',
+	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
+	Sliders = {
+		{
+			Title = 'Speed1',
+			Range = {16, 500},
+			Increment = 1,
+			StarterValue = 0,
+			CallBack = function(v)
+				game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+				syde:Notify({
+					Title = 'Player Speed Changed',
+					Content = 'This is a stress test your speed is:'..v,
+				})
+			end,
+		},
+		{
+			Title = 'Speed2',
+			Range = {0, 500},
+			Increment = 100,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+		{
+			Title = 'Speed4',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+		{
+			Title = 'Speed5',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+		{
+			Title = 'Speed7',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+	}
+})
+
+b:Toggle({
+	Title = 'Spped Toggle',
+	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
+	Config = true,
+	CallBack = function(v)
+		if v then
+			game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+		else
+			game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+		end
+	end,
+})
+
+b:CreateSlider({
+	Title = 'Mods 2',
+	Description = 'These Mods Are ServerSided',
+	Sliders = {
+		{
+			Title = 'Speed',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+		{
+			Title = 'Speed',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+	}
+})
+
+c:CreateSlider({
+	Title = 'Mods 2',
+	Description = 'These Mods Are ServerSided',
+	Sliders = {
+		{
+			Title = 'Speed',
+			Range = {0, 500},
+			Increment = 50,
+			StarterValue = 0,
+			CallBack = function(v)
+				print(v)
+			end,
+		},
+	}
+})
+
+b:Section('Dropdowns')
+
+b:Dropdown({
+	Title = 'This Is A Non Multi Dropdown',
+	Options = {'Apple', 'Orange', 'Pomagranete'},
+	PlaceHolder = 'Um Idk',
+	CallBack = function(option)
+		if option == 'Option3' then
+			print('drakes gay')
+		end
+	end,
+})
+
+b:Label('THIS A LABELLL', 'Right')
+
+b:Dropdown({
+	Title = 'This Is A Multi Dropdown',
+	Options = {'Option1', 'Option2', 'Option3', 'Option4', 'Option5', 'Option6', 'Option7'},
+	PlaceHolder = 'Selct Sum',
+	Multi = true,
+	CallBack = function(option)
+		print(option)
+	end,
+})
+
+b:Toggle({
+	Title = 'Toggle Speed',
+	CallBack = function(v)
+		print(v)
+		b:Toggle({
+			Title = 'Toggle Another Speed To Confirme',
+			CallBack = function(v)
+				print(v)
+			end,
+		})
+	end,
+})
+
 return syde
 
 
