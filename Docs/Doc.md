@@ -64,6 +64,16 @@ local e = Window:InitTab('FE')
 
 # 📌 Elements
 
+```lua
+SydeUI:Notify({
+	Title = 'This is a Notification',
+	Content = 'This is a Notification',
+	Duration = 5
+	-- Icons Coming Very Soon
+	-- Types Coming Very Soon ex. {Options}
+})
+```
+
 ## Button
 ```lua
 a:Button({
