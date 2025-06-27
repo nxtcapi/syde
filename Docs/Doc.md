@@ -75,14 +75,28 @@ SydeUI:Notify({
 ```
 
 ## Button
+
 ```lua
 a:Button({
-	Title = 'I am a button', -- Set Title
+	Title = 'Button', -- Set Title
 	Description = '', -- *Optional Description
 	Type = 'Default', -- *Optional Type {Default, Hold}
 	HoldTime = 2, -- Hold Time When Type is *Hold
 	CallBack = function()
-	
+	       print('Clicked')
+	end,
+})
+```
+
+## Toggle
+
+```lua
+b:Toggle({
+	Title = 'Toggle', -- Set Title
+	Value = true, -- *Optional Default Value {true, false}
+	Config = true, -- *Optional Config Window (Allows User To Set A KeyBind)
+	CallBack = function(v)
+		print(v)
 	end,
 })
 ```
