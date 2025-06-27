@@ -1,4 +1,4 @@
-# Syde Documentation
+# 📜 Syde Documentation
 
 ## Loading
 
@@ -62,7 +62,7 @@ local d = Window:InitTab('Esp')
 local e = Window:InitTab('FE')
 ```
 
-# Elements
+# 📌 Elements
 
 ## Button
 ```lua
