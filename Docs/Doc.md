@@ -29,7 +29,17 @@ syde:Load({
 			Size = "Small";
 			CopyToClip = true
 		}
-	}
+	},
+	ConfigurationSaving = { -- Allows Config Saving
+		Enabled = true,
+		FolderName = 'since',
+		FileName = "hot"
+	},
+	AutoJoinDiscord = { 
+		Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+		Invite = "CZRZBwPz", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+		RememberJoins = false -- Set this to false to make them join the discord every time they load it up
+	},
 })
 ```
 
