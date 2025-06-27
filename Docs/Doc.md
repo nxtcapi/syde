@@ -43,3 +43,12 @@ SydeUI:Load({
 })
 ```
 
+## Window
+
+```lua
+local Window = SydeUI:Init({
+	Title = 'Lavender';
+	SubText = 'Made With 💓 By @SellEssence'
+})
+```
+
