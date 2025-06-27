@@ -2,3 +2,5 @@
 
 Made With ❤️ By sellessence
 
+## More info
+[Docs]([https://github.com/dawid-scripts](https://github.com/yarrosvault/syde/blob/main/docs))
