@@ -52,3 +52,13 @@ local Window = SydeUI:Init({
 })
 ```
 
+## Creating A Tab
+
+```lua
+local a = Window:InitTab('Main') -- Icons Coming Very Soon
+local b = Window:InitTab('AutoFarms')
+local c = Window:InitTab('Fun')
+local d = Window:InitTab('Esp')
+local e = Window:InitTab('FE')
+```
+
