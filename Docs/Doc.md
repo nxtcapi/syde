@@ -47,8 +47,8 @@ SydeUI:Load({
 
 ```lua
 local Window = SydeUI:Init({
-	Title = 'Lavender';
-	SubText = 'Made With 💓 By @SellEssence'
+	Title = 'Lavender'; -- Set Title
+	SubText = 'Made With 💓 By @SellEssence' -- Set Subtitle
 })
 ```
 
