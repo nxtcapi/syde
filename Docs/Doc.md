@@ -66,7 +66,7 @@ local e = Window:InitTab('FE')
 
 ## Button
 ```lua
-b:Button({
+a:Button({
 	Title = 'I am a button', -- Set Title
 	Description = '', -- *Optional Description
 	Type = 'Default', -- *Optional Type {Default, Hold}
