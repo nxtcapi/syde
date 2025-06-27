@@ -9,7 +9,7 @@ Local SydeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/yarros
 ## Loader (Optional But Somethings Will Not Be Available)
 
 ```lua
-syde:Load({
+SydeUI:Load({
 	Logo = '7488932274',
 	Name = 'Lavender',
 	Status = 'Stable', -- {Stable, Unstable, Detected, Patched}
