@@ -1,8 +1,6 @@
 # Syde Documentation
 
-Welcome to the documentation for **Syde**.
-
-## 🌟 Example Usage
+## Loading
 
 ```lua
 local Players = game:GetService("Players")
