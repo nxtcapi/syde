@@ -91,7 +91,7 @@ a:Button({
 ## Toggle
 
 ```lua
-b:Toggle({
+a:Toggle({
 	Title = 'Toggle', -- Set Title
 	Value = true, -- *Optional Default Value {true, false}
 	Config = true, -- *Optional Config Window (Allows User To Set A KeyBind)
