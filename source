@@ -6,13 +6,15 @@
 .d8888b. dP    dP .d888b88 .d8888b. 
 Y8ooooo. 88    88 88'  `88 88ooood8 
       88 88.  .88 88.  .88 88.  ... 
-`88888P' `8888P88 `88888P8 `88888P' alpha.
+`88888P' `8888P88 `88888P8 `88888P' beta.
               .88                   
           d8888P                    
 
 
 made with 💓 by sellessence
 ]]
+
+
 
 local inputservice =	game:GetService("InsertService")
 local tweenservice = 	game:GetService("TweenService")
@@ -342,39 +344,47 @@ function syde:AddDrag(Object, Main, ConstrainToParent)
 	local dragging, dragInput, startMousePos, startFramePos = false, nil, nil, nil
 
 	local function getConstrainedPosition(newPos)
-		local minX, minY, maxX, maxY
-
-		if ConstrainToParent and Main.Parent and Main.Parent:IsA("GuiObject") then
-			local parentSize = Main.Parent.AbsoluteSize
-			local frameSize = Main.AbsoluteSize
-
-			minX, maxX = 0, parentSize.X - frameSize.X
-			minY, maxY = 0, parentSize.Y - frameSize.Y
-
-		elseif LockToScreen then
-			local screenSize = workspace.CurrentCamera.ViewportSize
-			local frameSize = Main.AbsoluteSize
-
-			minX, maxX = 0, screenSize.X - frameSize.X
-			minY, maxY = 0, screenSize.Y - frameSize.Y
-
-		else
+		if not LockToScreen then
 			return newPos
 		end
 
-		local constrainedX = math.clamp(newPos.X.Offset, minX, maxX)
-		local constrainedY = math.clamp(newPos.Y.Offset, minY, maxY)
+		local screenSize = workspace.CurrentCamera.ViewportSize
+		local frameSize = Main.AbsoluteSize
+		local anchorPoint = Main.AnchorPoint
 
-		return UDim2.new(newPos.X.Scale, constrainedX, newPos.Y.Scale, constrainedY)
+		-- Calculate the absolute position based on newPos
+		local absX = newPos.X.Offset
+		local absY = newPos.Y.Offset
+
+		-- Adjust clamping bounds to account for anchor point
+		local minX = 0 + (frameSize.X * anchorPoint.X)
+		local maxX = screenSize.X - (frameSize.X * (1 - anchorPoint.X))
+
+		local minY = 0 + (frameSize.Y * anchorPoint.Y)
+		local maxY = screenSize.Y - (frameSize.Y * (1 - anchorPoint.Y))
+
+		local clampedX = math.clamp(absX, minX, maxX)
+		local clampedY = math.clamp(absY, minY, maxY)
+
+		return UDim2.new(0, clampedX, 0, clampedY)
 	end
+
 
 	syde:AddConnection(Object.InputBegan, function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			startMousePos = userInput:GetMouseLocation()
+
+			-- Convert position to Offset only
+			local screenSize = workspace.CurrentCamera.ViewportSize
+			local absX = screenSize.X * Main.Position.X.Scale + Main.Position.X.Offset
+			local absY = screenSize.Y * Main.Position.Y.Scale + Main.Position.Y.Offset
+
+			Main.Position = UDim2.new(0, absX, 0, absY)
 			startFramePos = Main.Position
 		end
 	end)
+
 
 	syde:AddConnection(userInput.InputChanged, function(input)
 		if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
@@ -451,42 +461,45 @@ function syde:Modal(Modal)
 
 		local function openModal()
 			print(activeModals)
-			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.55, Enum.EasingStyle.Quint), {Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.75, Enum.EasingStyle.Quint), {Size = UDim2.new(1, ModalInstance.Content.Size.X.Offset, 1, ModalInstance.Content.TextBounds.Y)}):Play()
 			activeModals += 1
-			ModalInstance.Size = UDim2.new(0, ModalInstance.Size.X.Offset, 0, ModalInstance.Content.TextBounds.Y + 130)
-			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 455,0,  ModalInstance.Content.TextBounds.Y + 130)}):Play()
+			--	ModalInstance.Size = UDim2.new(0, ModalInstance.Size.X.Offset, 0, ModalInstance.Content.TextBounds.Y + 120)
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.65, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 455,0,  ModalInstance.Content.TextBounds.Y + 120)}):Play()
 
-			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-			tweenservice:Create(ModalInstance.Title, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Title, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 
-			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 
-			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 
 		end
 		openModal()
 
 		local function closeModal()
 			activeModals -= 1
+			print(activeModals)
 			ModalInstance.Buttons.Cancel.Interactable = false
 			ModalInstance.Buttons.Confirm.Interactable = false
-			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 219,0, 147)}):Play()
-			tweenservice:Create(ModalInstance, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Title, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance, TweenInfo.new(0.75, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 219,0, 147)}):Play()
+			tweenservice:Create(ModalInstance, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Title, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 
-			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Confirm.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 
-			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(0.45, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.TextLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Buttons.Cancel.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 			task.wait(0.45)
 			ModalInstance:Destroy()
 		end
@@ -528,7 +541,6 @@ function syde:Modal(Modal)
 
 	end)
 end
-
 
 function syde:Notify(Notification)
 	task.spawn(function()
@@ -1070,9 +1082,35 @@ local TABS = WINDOW.Tab.ScrollingFrame
 local PAGES = WINDOW.Pages
 local settingsOpen = false
 local UIClosed = false
+local Connected = false
+local UserInfoDisabled = false
 local UIToggle = Enum.KeyCode.RightShift
 
+function SetUserInfo()
+	local LocalPlayer = player.LocalPlayer
+
+	local PLACEHOLDER_IMAGE = "rbxassetid://0" 
+	local THUMBNAIL_TYPE = Enum.ThumbnailType.HeadShot
+	local THUMBNAIL_SIZE = Enum.ThumbnailSize.Size420x420
+
+	local imageLabel = WINDOW:WaitForChild("UserInfo"):WaitForChild("ImageLabel")
+	imageLabel.Image = PLACEHOLDER_IMAGE
+
+	local success, thumbnail = pcall(function()
+		return player:GetUserThumbnailAsync(LocalPlayer.UserId, THUMBNAIL_TYPE, THUMBNAIL_SIZE)
+	end)
+
+	if success and thumbnail then
+		imageLabel.Image = thumbnail
+		WINDOW.UserInfo.ImageLabel.text.Username.Text = LocalPlayer.Name
+		WINDOW.UserInfo.ImageLabel.text.Display.Text = "@"..LocalPlayer.DisplayName
+	else
+		imageLabel.Image = PLACEHOLDER_IMAGE
+	end
+end
+
 function CloseUI()
+	task.wait(0.3)
 	PAGES.Visible = false
 	WINDOW.Tab.Visible = false
 	UIClosed = true
@@ -1091,6 +1129,12 @@ function CloseUI()
 	tweenservice:Create(WINDOW.Top.UHolder.Util.Plugin, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.Top.UHolder.Util.Settings, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.Top.UHolder.Frame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.UIStroke, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Transparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Username, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Display, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status.TextLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
 	task.wait(0.8)
 	if UIClosed == true then
 		syde:Notify({
@@ -1123,6 +1167,12 @@ function OpenUI()
 	tweenservice:Create(WINDOW.Top.UHolder.Util.Plugin, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.05 }):Play()
 	tweenservice:Create(WINDOW.Top.UHolder.Util.Settings, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.05 }):Play()
 	tweenservice:Create(WINDOW.Top.UHolder.Frame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.UIStroke, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Transparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Username, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Display, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status.TextLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0 }):Play()
 end
 
 local BOUNCE = false
@@ -1173,6 +1223,15 @@ function syde:Init(library)
 	-- [Initial Transparency Setup]
 	TOPBAR.Title.TextTransparency = 1
 	TOPBAR.Title.Sub.TextTransparency = 1
+	
+	-- Syde Connection (Coming Soon)
+	SetUserInfo()
+
+	if not UserInfoDisabled then
+		tweenservice:Create(WINDOW.Tab, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 200,1, -150) }):Play()
+	else
+		tweenservice:Create(WINDOW.Tab, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 200,1, -50) }):Play()
+	end
 
 	--[Settings Page Init]
 	if not settingsOpen then
@@ -1273,13 +1332,13 @@ function syde:Init(library)
 
 
 	WINDOW.Top.UHolder.Util.Mini.interact.MouseButton1Click:Connect(function()
-		CloseUI()
+		ToggleUI()
 	end)
 
 	WINDOW.Top.UHolder.Util.Close.interact.MouseButton1Click:Connect(function()
 		syde:Modal({
 			Title = 'Close This UI?',
-			Content = 'Are you sure you want to close this ui?',
+			Content = 'Are You Sure You Want To Close This UI?',
 			ConfimCallBack = function()
 				task.wait(1)
 				Library:Destroy()
@@ -1576,6 +1635,105 @@ function syde:Init(library)
 
 
 			end
+			
+			---
+			
+			function element:TextInput(TextInput, Parent)
+				local TextInputData = {
+					Title = TextInput.Title or "Text Input",
+					PlaceHolder = TextInput.PlaceHolder or "Enter text...",
+					NumbersOnly = TextInput.NumberOnly or false,
+					ClearOnLost = TextInput.ClearOnLost == nil and true or TextInput.ClearOnLost,
+					MaxSize = TextInput.MaxSize or 100,
+					CallBack = TextInput.CallBack,
+				}
+
+				local textinput = Library.Settings.Input:Clone()
+				textinput.Visible = true
+				textinput.Parent = Parent
+				textinput.Name = TextInputData.Title
+				textinput.Title.Text = TextInputData.Title
+				textinput.TextFrame.TextBox.PlaceholderText = TextInputData.PlaceHolder
+
+				local textBox = textinput.TextFrame.TextBox
+				local defaultHeight = 32
+				local maxHeight = TextInputData.MaxSize
+
+				textinput.TextFrame.Enter.MouseEnter:Connect(function()
+					tweenservice:Create(textinput.TextFrame.Enter, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+				end)
+
+				textinput.TextFrame.Enter.MouseLeave:Connect(function()
+					tweenservice:Create(textinput.TextFrame.Enter, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+				end)
+
+				textBox:GetPropertyChangedSignal("Text"):Connect(function()
+					if TextInputData.NumbersOnly then
+						textBox.Text = textBox.Text:gsub("%D", "")
+					end
+
+					textBox.Size = UDim2.new(1, -60, 0, defaultHeight + 40)
+
+					local textSize = game:GetService("TextService"):GetTextSize(
+						textBox.Text, textBox.TextSize, textBox.Font, Vector2.new(textBox.AbsoluteSize.X, math.huge)
+					)
+
+					if textBox.Text == "" then
+						textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+					else
+						local newHeight = math.min(textSize.Y + 18, maxHeight + 50)
+						textBox.Size = UDim2.new(1, -60, 0, newHeight)
+					end
+
+				end)
+
+				textinput.TextFrame:GetPropertyChangedSignal("Size"):Connect(function()
+					local newHeight = textinput.TextFrame.Size.Y.Offset
+					local extraHeight = 32
+
+					tweenservice:Create(
+						textinput,
+						TweenInfo.new(0.7, Enum.EasingStyle.Quint),
+						{ Size = UDim2.new(1, -15, 0, newHeight + extraHeight + 25) }
+					):Play()
+
+				end)
+
+				textBox:GetPropertyChangedSignal("Size"):Connect(function()
+					local newHeight = textBox.Size.Y.Offset
+					local totalHeight = math.max(newHeight, defaultHeight)
+
+					tweenservice:Create(
+						textinput.TextFrame,
+						TweenInfo.new(0.7, Enum.EasingStyle.Quint),
+						{ Size = UDim2.new(1, -60, 0, totalHeight + 0) }
+					):Play()
+
+				end)
+
+				local function ProcessInput()
+					local success, errorMsg = pcall(function()
+						TextInputData.CallBack(textBox.Text)
+					end)
+					if not success then
+						warn("Error in TextInput callback [" .. textinput.Name .. "]: " .. tostring(errorMsg))
+					end
+				end
+
+				textinput.TextFrame.Enter.MouseButton1Click:Connect(ProcessInput)
+
+				textBox.FocusLost:Connect(function(enterPressed)
+					if enterPressed then
+						ProcessInput()
+					end
+					if TextInputData.ClearOnLost then
+						textBox.Text = ""
+						textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+					else
+						textBox.ClearTextOnFocus = false
+					end
+				end)
+			end
 
 			---
 
@@ -1762,6 +1920,7 @@ function syde:Init(library)
 					tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(35, 35, 35) }):Play()
 					tweenservice:Create(colorpicker.color, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromHSV(HSV[1], 1, 1) }):Play()
 					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+					tweenservice:Create(colorpicker.color.glow, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1}):Play()
 					task.wait(0.12)
 					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.9, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -200,0, 120) }):Play()
 					tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(18, 18, 18) }):Play()
@@ -1828,6 +1987,7 @@ function syde:Init(library)
 					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 20,0, 20) }):Play()
 					tweenservice:Create(colorpicker.color, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundColor3 = ColorPickerData.Color }):Play()
 					tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create(colorpicker.color.glow, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0.73}):Play()
 					colorpicker.interact.Interactable = true
 					colorpicker.QuickClose.Interactable = false
 
@@ -2188,7 +2348,7 @@ function syde:Init(library)
 					)
 
 					local newDescSize = UDim2.new(1, -20, 0, textSize.Y)
-					local newButtonSize = UDim2.new(Para.Size.X.Scale, Para.Size.X.Offset, 0, textSize.Y + 40) -- Adding extra padding
+					local newButtonSize = UDim2.new(Para.Size.X.Scale, -40, 0, textSize.Y + 40) -- Adding extra padding
 
 					local descTween = tweenservice:Create(Para.Content, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = newDescSize })
 					descTween:Play()
@@ -2203,7 +2363,8 @@ function syde:Init(library)
 
 				local ParagraphSettings = {}
 
-				function ParagraphSettings:Set(text)
+				function ParagraphSettings:Set(text, title)
+					Para.Title.Text = title
 					Para.Content.Text = text
 				end
 
@@ -2326,7 +2487,7 @@ function syde:Init(library)
 		Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = syde.theme.HitBox
 		Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = syde.theme.HitBox]]
 					slider.slideholder.Size = UDim2.new(1,-30,0,slider.slideholder.UIListLayout.AbsoluteContentSize.Y)
-					slider.Size = UDim2.new(1,-40,0,slider.slideholder.AbsoluteSize.Y + 55)
+					slider.Size = UDim2.new(1,-40,0,slider.slideholder.AbsoluteSize.Y + 25)
 
 		--[[syde:AddConnection(syde.Comms.Event, function(p, color)
 			if p == 'HitBox' then
@@ -2831,7 +2992,17 @@ function syde:Init(library)
 				LockToScreen = v
 			end
 		}, WINDOW.Settings.Pages.Theme.Container)
-
+		
+		element:CreateButton({
+			Title = 'Save',
+			Description = "Saves Setting Configuration",
+			CallBack = function(v)
+				syde:Notify({
+					Title = 'Saving Coming Soon',
+					Content = 'Saving in Settings Coming Soon'
+				})
+			end,
+		},  WINDOW.Settings.Pages.Theme.Container)
 
 		element:Paragraph({
 			Title = 'Coming Soon',
@@ -2843,7 +3014,7 @@ function syde:Init(library)
 			Content = 'Your Up To Date!'
 		}, WINDOW.Settings.Pages.Info.Container)
 
-		local startTime = tick()
+		--local startTime = tick()
 
 		-- breaks ui may add later
 --[[	local uptimeParagraph = element:Paragraph({
@@ -3611,6 +3782,14 @@ function syde:Init(library)
 				end)
 
 			end
+			
+			syde:AddConnection(syde.Comms.Event, function(p, color)
+				if p == 'HitBox' then
+					if ToggleData.V then
+						toggle.tog.BackgroundColor3 = color
+					end
+				end
+			end)
 		end
 
 		function InitElement:CreateSlider(Slider)
@@ -4311,6 +4490,7 @@ function syde:Init(library)
 				tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(35, 35, 35) }):Play()
 				tweenservice:Create(colorpicker.color, TweenInfo.new( 1, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromHSV(HSV[1], 1, 1) }):Play()
 				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 0 }):Play()
+				tweenservice:Create(colorpicker.color.glow, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 1}):Play()
 				task.wait(0.12)
 				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.9, Enum.EasingStyle.Quart ), { Size = UDim2.new(1, -200,0, 120) }):Play()
 				tweenservice:Create(colorpicker, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { BackgroundColor3 = Color3.fromRGB(18, 18, 18) }):Play()
@@ -4373,10 +4553,11 @@ function syde:Init(library)
 			local function ClosePicker()
 				Open = false
 				DeBounce = true
-				tweenservice:Create(colorpicker, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(1, -15,0, 40) }):Play()
+				tweenservice:Create(colorpicker, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(1, -40,0, 40) }):Play()
 				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.85, Enum.EasingStyle.Quint ), { Size = UDim2.new(0, 20,0, 20) }):Play()
 				tweenservice:Create(colorpicker.color, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundColor3 = ColorPickerData.Color }):Play()
 				tweenservice:Create(colorpicker.QuickClose, TweenInfo.new( 0.6, Enum.EasingStyle.Exponential ), { BackgroundTransparency = 1 }):Play()
+				tweenservice:Create(colorpicker.color.glow, TweenInfo.new( 0.8, Enum.EasingStyle.Exponential ), { ImageTransparency = 0.73}):Play()
 				colorpicker.interact.Interactable = true
 				colorpicker.QuickClose.Interactable = false
 
@@ -4909,380 +5090,6 @@ function syde:Init(library)
 	return ldata
 
 end
-
-
-
-syde:Load({
-	Logo = '8508980527',
-	Name = 'Sum Crum Stick',
-	Status = 'Detected',
-	Accent = Color3.fromRGB(255, 234, 79),
-	HitBox = Color3.fromRGB(175, 254, 255),
-	AutoLoad = false,
-	Socials = {
-		{
-			Name = 'Syde';
-			Style = 'Discord';
-			Size = "Large";
-			CopyToClip = true
-		},
-		{
-			Name = 'GitHub';
-			Style = 'GitHub';
-			Size = "Small";
-			CopyToClip = true
-		}
-	},
-	ConfigurationSaving = {
-		Enabled = true,
-		FolderName = 'since',
-		FileName = "hot"
-	},
-	AutoJoinDiscord = { 
-		Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-		Invite = "CZRZBwPz", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-		RememberJoins = false -- Set this to false to make them join the discord every time they load it up
-	},
-})
-
-
-local state = syde:Init({
-	Title = 'Lavender';
-	SubText = 'Made With 💓 By @SellEssence'
-})
-
-
-local a = state:InitTab('Main')
-local b = state:InitTab('AutoFarms')
-local c = state:InitTab('Fun')
-local d = state:InitTab('Esp')
-local e = state:InitTab('FE')
-
-b:Button({
-	Title = 'I am a button',
-	CallBack = function()
-		print('sense')
-		syde:Notify({
-			Title = 'heyy',
-			Content = 'woiejf',
-			Duration = 0.5
-		})
-
-	end,
-})
-b:Button({
-	Title = 'I am a button 2',
-	Description = "Hold me",
-	Type = 'Hold',
-	HoldTime = 2,
-	CallBack = function()
-		print('sense')
-		syde:Notify({
-			Title = 'Button Held Goid',
-			Content = 'Hey Baby This is a pretty long paragraph jus to ttext the sizing with the notifs how is it'
-		})
-	end,
-})
-
-b:Keybind({
-	Title = 'ije',
-	Key = Enum.KeyCode.W;
-	CallBack = function()
-		print('r')
-	end,
-})
-
-
-b:Section('Random', '8932620770')
-
-b:Paragraph({
-	Title = "A Paragraph Titlee",
-	Content = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ips'
-})
-
-b:Button({
-	Title = 'I am a button 4',
-	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
-	CallBack = function()
-		syde:Notify({
-			Title = 'Button Held Goid',
-			Content = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
-		})
-	end,
-})
-
-d:Button({
-	Title = 'I am a button 3',
-	Description = 'I ALSO HAVE A DESCRIPTION BUT ITS WAYYY LONGER THAN BUTTON 2 LOL, I ALOS WRAP SO TAK THAT',
-	CallBack = function()
-		print('sense')
-		d:Button({
-			Title = 'I am a button 3',
-			CallBack = function()
-				print('sense')
-			end,
-		})
-	end,
-})
-
-b:Img({
-	Image = '81860879400335'
-})
-
-b:Toggle({
-	Title = 'Gay',
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:Toggle({
-	Title = 'Gay Toggle',
-	Value = true,
-	Config = true,
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:Section('Inputs', '8932620770')
-
-b:TextInput({
-	Title = 'Gimmie Your Token (50 Max)_',
-	PlaceHolder = 'Your Token...',
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:Img({
-	Image = '1403980926'
-})
-
-b:TextInput({
-	Title = 'Gimmie Your Token (100 Max)_',
-	MaxSize = 100,
-	PlaceHolder = 'Your Token...',
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-c:TextInput({
-	Title = 'Gimmie Your Token (100 Max)_',
-	MaxSize = 100,
-	PlaceHolder = 'Your Token...',
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:TextInput({
-	Title = 'Gimmie Your Token (1000 Max)_ with desc',
-	MaxSize = 1000,
-	PlaceHolder = 'Your Token...',
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:TextInput({
-	Title = 'Player Speed',
-	PlaceHolder = 'Enter Speed',
-	NumberOnly = true,
-	ClearOnLost = false,
-	CallBack = function(v)
-		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v 
-	end,
-})
-
-b:Section('Colorpicker')
-
-b:ColorPicker({
-	Title = 'Ball Hair',
-	Linkable = true,
-	Color = Color3.fromRGB(0, 38, 255);
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:ColorPicker({
-	Title = 'Link Me To Ball Hair',
-	Linkable = true,
-	Color = Color3.fromRGB(105, 149, 182);
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:ColorPicker({
-	Title = 'Ball Hair but im not linkable i dont like any other colros',
-	Linkable = false,
-	Color = Color3.fromRGB(183, 0, 255);
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:Section('Misc')
-
-b:Toggle({
-	Title = 'Gay Toggle',
-	Description = 'Im also a gay toggle but this a descriptiton i wuld recommend not putting it to long',
-	Config = true,
-	CallBack = function(v)
-		print(v)
-	end,
-})
-
-b:CreateSlider({
-	Title = 'Mods',
-	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
-	Sliders = {
-		{
-			Title = 'Speed1',
-			Range = {16, 500},
-			Increment = 1,
-			StarterValue = 0,
-			CallBack = function(v)
-				game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
-				syde:Notify({
-					Title = 'Player Speed Changed',
-					Content = 'This is a stress test your speed is:'..v,
-				})
-			end,
-		},
-		{
-			Title = 'Speed2',
-			Range = {0, 500},
-			Increment = 100,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-		{
-			Title = 'Speed4',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-		{
-			Title = 'Speed5',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-		{
-			Title = 'Speed7',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-	}
-})
-
-b:Toggle({
-	Title = 'Spped Toggle',
-	Description = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
-	Config = true,
-	CallBack = function(v)
-		if v then
-			game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
-		else
-			game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
-		end
-	end,
-})
-
-b:CreateSlider({
-	Title = 'Mods 2',
-	Description = 'These Mods Are ServerSided',
-	Sliders = {
-		{
-			Title = 'Speed',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-		{
-			Title = 'Speed',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-	}
-})
-
-c:CreateSlider({
-	Title = 'Mods 2',
-	Description = 'These Mods Are ServerSided',
-	Sliders = {
-		{
-			Title = 'Speed',
-			Range = {0, 500},
-			Increment = 50,
-			StarterValue = 0,
-			CallBack = function(v)
-				print(v)
-			end,
-		},
-	}
-})
-
-b:Section('Dropdowns')
-
-b:Dropdown({
-	Title = 'This Is A Non Multi Dropdown',
-	Options = {'Apple', 'Orange', 'Pomagranete'},
-	PlaceHolder = 'Um Idk',
-	CallBack = function(option)
-		if option == 'Option3' then
-			print('drakes gay')
-		end
-	end,
-})
-
-b:Label('THIS A LABELLL', 'Right')
-
-b:Dropdown({
-	Title = 'This Is A Multi Dropdown',
-	Options = {'Option1', 'Option2', 'Option3', 'Option4', 'Option5', 'Option6', 'Option7'},
-	PlaceHolder = 'Selct Sum',
-	Multi = true,
-	CallBack = function(option)
-		print(option)
-	end,
-})
-
-b:Toggle({
-	Title = 'Toggle Speed',
-	CallBack = function(v)
-		print(v)
-		b:Toggle({
-			Title = 'Toggle Another Speed To Confirme',
-			CallBack = function(v)
-				print(v)
-			end,
-		})
-	end,
-})
 
 return syde
 
