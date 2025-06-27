@@ -3,8 +3,5 @@
 ## Loading
 
 ```lua
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-print("Welcome, " .. player.Name)
+Local SydeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/yarrosvault/syde/refs/heads/main/source",true))()
 
