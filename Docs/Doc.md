@@ -62,3 +62,18 @@ local d = Window:InitTab('Esp')
 local e = Window:InitTab('FE')
 ```
 
+# Elements
+
+## Button
+```lua
+b:Button({
+	Title = 'I am a button', -- Set Title
+	Description = '', -- *Optional Description
+	Type = 'Default', -- *Optional Type {Default, Hold}
+	HoldTime = 2, -- Hold Time When Type is *Hold
+	CallBack = function()
+	
+	end,
+})
+```
+
