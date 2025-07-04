@@ -3,7 +3,7 @@
 ## Loading
 
 ```lua
-Local SydeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/yarrosvault/syde/refs/heads/main/source",true))()
+local SydeUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/yarrosvault/syde/refs/heads/main/source",true))()
 ```
 
 ## Loader (Optional But Somethings Will Not Be Available)
