@@ -3,4 +3,4 @@
 Made With ❤️ By sellessence
 
 ## More info
-[Docs](essencejs.github.io/syde/)
+[Docs](https://essencejs.github.io/syde/)
