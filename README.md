@@ -3,4 +3,4 @@
 Made With ❤️ By sellessence
 
 ## More info
-[Docs](https://github.com/yarrosvault/syde/blob/main/Docs/Doc.md)
+[Docs](essencejs.github.io/syde/)
