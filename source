@@ -47,7 +47,12 @@ local syde = {
 	Connections = {};
 	Comms = Instance.new('BindableEvent');
 	ParentOverride = nil;
-	Build = 'SY2'
+	Build = 'SY2';
+	ConfigEnabled = false;
+	ConfigFolder = 'Syde';
+	ConfigFile = 'Config';
+	Flags = {};
+	SettingsFlags = {};
 }
 
 
@@ -302,6 +307,34 @@ function syde:removeLoadTween(object)
 		loadTweens[object] = nil
 	end
 end
+
+function syde:ColorPack(color)
+	assert(typeof(color) == "Color3", "PackColor expects a Color3 value.")
+
+	-- Convert to RGB integer values
+	return {
+		R = math.round(color.R * 255),
+		G = math.round(color.G * 255),
+		B = math.round(color.B * 255)
+	}
+end
+
+function syde:ColorUnpack(color)
+	assert(type(color) == "table" or type(color) == "string", "Invalid color format. Expected table (RGB) or string (HEX).")
+
+	if type(color) == "table" then
+
+		assert(color.R and color.G and color.B, "RGB table must contain 'R', 'G', and 'B' keys.")
+		return Color3.fromRGB(math.clamp(color.R, 0, 255), math.clamp(color.G, 0, 255), math.clamp(color.B, 0, 255))
+	elseif type(color) == "string" then
+
+		local hex = color:match("^#?(%x%x%x%x%x%x)$")
+		assert(hex, "Invalid HEX color format. Expected '#RRGGBB' or 'RRGGBB'.")
+		local r, g, b = tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16)
+		return Color3.fromRGB(r, g, b)
+	end
+end
+
 
 
 
@@ -620,7 +653,7 @@ end
 do
 
 	function syde:Load(Config)
-		print('[SYED] Loader Loaded')
+		print('Syde 〡 Loader Loaded')
 		local LOADER = Loader
 		LOADER.Enabled = true
 		LOADER.Parent = coregui
@@ -685,107 +718,147 @@ do
 				})
 			end
 
+			local largeCount, smallCount = 0, 0
+
 			for _, social in ipairs(LoaderConfig.Socials) do
 				if social.Size == "Large" then
-					local LargeSocial = LOADER.load.social.largeblock.largesocial:Clone()
-					LargeSocial.Visible = true
-					LargeSocial.Parent = LOADER.load.social.largeblock
+					largeCount += 1
+				elseif social.Size == "Small" then
+					smallCount += 1
+				end
+			end
 
-					-- [StyleHandle]
-					if social.Style == 'GitHub' then
-						LargeSocial.BackgroundColor3 = Styles.GitHub.BackGroundColor
-						LargeSocial.UIStroke.Color = Styles.GitHub.StrokeColor
-						LargeSocial.UIGradient.Color = Styles.GitHub.GradColor
+			if largeCount > 1 or smallCount > 2 then
+				warn("[SYDE] Only 1 Large block and 2 Small blocks are allowed in Socials.")
+				LoaderConfig.Socials = nil
+			else
+				for _, social in ipairs(LoaderConfig.Socials) do
+					if social.Size == "Large" then
+						local LargeSocial = LOADER.load.social.largeblock.largesocial:Clone()
+						LargeSocial.Visible = true
+						LargeSocial.Parent = LOADER.load.social.largeblock
 
-						LargeSocial.DiscordTitle.Visible  = false
-						LargeSocial.Visit.Visible = false
-
-						LargeSocial.SocialName.Position = UDim2.new(0, 45,0, 25)
-						LargeSocial.SocialName.Text = 'GitHub'
-						LargeSocial.GitName.Visible = true
-						LargeSocial.GitName.Text = '@'..social.Name
-						LargeSocial.ImageLabel.Image = 'rbxassetid://86992377698608'
-						LargeSocial.UIStroke.UIGradient:Destroy()
-					elseif social.Style == 'Discord' then
-						LargeSocial.BackgroundColor3 = Styles.Discord.BackGroundColor
-						LargeSocial.UIStroke.Color = Styles.Discord.StrokeColor
-						LargeSocial.UIGradient.Color = Styles.Discord.GradColor
-						LargeSocial.ImageLabel.Image = 'rbxassetid://108012241529487'
-
-						if not LargeSocial.UIStroke.UIGradient then
-							local strokeGrad = Instance.new('UIGradient', LargeSocial.UIStroke)
-							strokeGrad.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(91, 125, 147))}
-							strokeGrad.Rotation = -34
-						else
-							LargeSocial.UIStroke.UIGradient.Color =  ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(91, 125, 147))}
+						if social.CopyToClip and LargeSocial:FindFirstChild("interact") then
+							LargeSocial.interact.MouseButton1Click:Connect(function()
+								if social.Style == 'Discord' then
+									setclipboard(social.Discord)
+								elseif social.Style == 'WebSite' then
+									setclipboard(social.Name)
+								elseif social.Style == 'GitHub' then
+									setclipboard(social.GitHub)
+								end
+							end)
 						end
 
+						-- [StyleHandle]
+						if social.Style == 'GitHub' then
+							LargeSocial.BackgroundColor3 = Styles.GitHub.BackGroundColor
+							LargeSocial.UIStroke.Color = Styles.GitHub.StrokeColor
+							LargeSocial.UIGradient.Color = Styles.GitHub.GradColor
 
-						LargeSocial.DiscordTitle.Visible  = true
-						LargeSocial.Visit.Visible = true
-						LargeSocial.GitName.Visible = false
-						LargeSocial.SocialName.Position = UDim2.new(0, 45,0, 30)
-						LargeSocial.SocialName.Text = social.Name
-						LargeSocial.Visit.Position = UDim2.new(1, -95,0.5, 0)
-						LargeSocial.Visit.ImageLabel.Visible = true
-					elseif social.Style == 'WebSite' then
-						LargeSocial.BackgroundColor3 = Styles.Site.BackGroundColor
-						LargeSocial.UIStroke.Color = Styles.Site.StrokeColor
-						LargeSocial.UIGradient.Color = Styles.Site.GradColor
-						LargeSocial.ImageLabel.Image = 'rbxassetid://74915074739925'
+							LargeSocial.DiscordTitle.Visible  = false
+							LargeSocial.Visit.Visible = false
 
-						LargeSocial.DiscordTitle.Visible  = false
-						LargeSocial.Visit.Visible = true
-						LargeSocial.GitName.Visible = false
+							LargeSocial.SocialName.Position = UDim2.new(0, 45,0, 25)
+							LargeSocial.SocialName.Text = 'GitHub'
+							LargeSocial.GitName.Visible = true
+							LargeSocial.GitName.Text = '@'..social.GitHub
+							LargeSocial.ImageLabel.Image = 'rbxassetid://86992377698608'
+							LargeSocial.UIStroke.UIGradient:Destroy()
+						elseif social.Style == 'Discord' then
+							LargeSocial.BackgroundColor3 = Styles.Discord.BackGroundColor
+							LargeSocial.UIStroke.Color = Styles.Discord.StrokeColor
+							LargeSocial.UIGradient.Color = Styles.Discord.GradColor
+							LargeSocial.ImageLabel.Image = 'rbxassetid://108012241529487'
+							LargeSocial.SocialName.Text = social.Discord
 
-						if not LargeSocial.UIStroke.UIGradient then
-							local strokeGrad = Instance.new('UIGradient', LargeSocial.UIStroke)
-							strokeGrad.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(181, 33, 225))}
-							strokeGrad.Rotation = -25
-						else
-							LargeSocial.UIStroke.UIGradient.Color =  ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(181, 33, 225))}
+							if not LargeSocial.UIStroke.UIGradient then
+								local strokeGrad = Instance.new('UIGradient', LargeSocial.UIStroke)
+								strokeGrad.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(91, 125, 147))}
+								strokeGrad.Rotation = -34
+							else
+								LargeSocial.UIStroke.UIGradient.Color =  ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(91, 125, 147))}
+							end
+
+
+							LargeSocial.DiscordTitle.Visible  = true
+							LargeSocial.Visit.Visible = true
+							LargeSocial.GitName.Visible = false
+							LargeSocial.SocialName.Position = UDim2.new(0, 45,0, 30)
+							LargeSocial.Visit.Position = UDim2.new(1, -95,0.5, 0)
+							LargeSocial.Visit.ImageLabel.Visible = true
+
+						elseif social.Style == 'WebSite' then
+							LargeSocial.BackgroundColor3 = Styles.Site.BackGroundColor
+							LargeSocial.UIStroke.Color = Styles.Site.StrokeColor
+							LargeSocial.UIGradient.Color = Styles.Site.GradColor
+							LargeSocial.ImageLabel.Image = 'rbxassetid://74915074739925'
+
+							LargeSocial.DiscordTitle.Visible  = false
+							LargeSocial.Visit.Visible = true
+							LargeSocial.GitName.Visible = false
+
+							if not LargeSocial.UIStroke.UIGradient then
+								local strokeGrad = Instance.new('UIGradient', LargeSocial.UIStroke)
+								strokeGrad.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(181, 33, 225))}
+								strokeGrad.Rotation = -25
+							else
+								LargeSocial.UIStroke.UIGradient.Color =  ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(181, 33, 225))}
+							end
+
+
+							LargeSocial.SocialName.Text = social.Name
+							LargeSocial.Visit.ImageLabel.Visible = false
+							LargeSocial.Visit.TextColor3 = Color3.fromRGB(255, 255, 255)
+							LargeSocial.Visit.Text = 'Visit site'
+							LargeSocial.Visit.Position = UDim2.new(1, -80,0.5, 0)
+						end
+					end
+
+					if social.Size == "Small" then
+						LOADER.load.social.little.Visible = true
+						local SmallSocial = LOADER.load.social.little.smallblock1:Clone()
+						SmallSocial.Visible = true
+						SmallSocial.Parent = LOADER.load.social.little
+
+						if social.CopyToClip and SmallSocial:FindFirstChild("interact") then
+							SmallSocial.interact.MouseButton1Click:Connect(function()
+								--	setclipboard(social.Discord or social.Name or "No data")
+								if social.Style == 'WebSite' then
+									setclipboard(social.Name)
+								elseif social.Style == 'GitHub' then
+									setclipboard(social.GitHub)
+								end
+							end)
 						end
 
+						if social.Style == "GitHub" then
+							SmallSocial.BackgroundColor3 = Styles.GitHub.BackGroundColor
+							SmallSocial.UIStroke.Color = Styles.GitHub.StrokeColor
+							SmallSocial.UIGradient.Color = Styles.GitHub.GradColor
 
-						LargeSocial.SocialName.Text = social.Name
-						LargeSocial.Visit.ImageLabel.Visible = false
-						LargeSocial.Visit.TextColor3 = Color3.fromRGB(255, 255, 255)
-						LargeSocial.Visit.Text = 'Visit site'
-						LargeSocial.Visit.Position = UDim2.new(1, -80,0.5, 0)
+							SmallSocial.SocialName.Text = 'GitHub'
+							SmallSocial.Text.Visible = true
+							SmallSocial.Text.TextColor3 = Color3.fromRGB(90, 90, 90)
+							SmallSocial.Text.Text = '@'..social.Name
+							SmallSocial.ImageLabel.Image = 'rbxassetid://86992377698608'
+						elseif social.Style == 'WebSite' then
+							SmallSocial.BackgroundColor3 = Styles.Site.BackGroundColor
+							SmallSocial.UIStroke.Color = Styles.Site.StrokeColor
+							SmallSocial.UIGradient.Color = Styles.Site.GradColor
+
+							SmallSocial.SocialName.Text = social.Name
+							SmallSocial.Text.Visible = true
+							SmallSocial.Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+							SmallSocial.Text.Text = 'Visit Site'
+							SmallSocial.ImageLabel.Image = 'rbxassetid://74915074739925'
+							SmallSocial.ImageLabel.ImageColor3 = Color3.fromRGB(231, 160, 255)
+						end
 					end
-				end
 
-				if social.Size == "Small" then
-					LOADER.load.social.little.Visible = true
-					local SmallSocial = LOADER.load.social.little.smallblock1:Clone()
-					SmallSocial.Visible = true
-					SmallSocial.Parent = LOADER.load.social.little
-
-					if social.Style == "GitHub" then
-						SmallSocial.BackgroundColor3 = Styles.GitHub.BackGroundColor
-						SmallSocial.UIStroke.Color = Styles.GitHub.StrokeColor
-						SmallSocial.UIGradient.Color = Styles.GitHub.GradColor
-
-						SmallSocial.SocialName.Text = 'GitHub'
-						SmallSocial.Text.Visible = true
-						SmallSocial.Text.TextColor3 = Color3.fromRGB(90, 90, 90)
-						SmallSocial.Text.Text = '@'..social.Name
-						SmallSocial.ImageLabel.Image = 'rbxassetid://86992377698608'
-					elseif social.Style == 'WebSite' then
-						SmallSocial.BackgroundColor3 = Styles.Site.BackGroundColor
-						SmallSocial.UIStroke.Color = Styles.Site.StrokeColor
-						SmallSocial.UIGradient.Color = Styles.Site.GradColor
-
-						SmallSocial.SocialName.Text = social.Name
-						SmallSocial.Text.Visible = true
-						SmallSocial.Text.TextColor3 = Color3.fromRGB(255, 255, 255)
-						SmallSocial.Text.Text = 'Visit Site'
-						SmallSocial.ImageLabel.Image = 'rbxassetid://74915074739925'
-						SmallSocial.ImageLabel.ImageColor3 = Color3.fromRGB(231, 160, 255)
+					if social.CopyToClip then
+						print('Copied')
 					end
-				end
-
-				if social.CopyToClip then
 				end
 			end
 
@@ -864,35 +937,37 @@ do
 				local fileName = Config.ConfigurationSaving.FileName or "default_config"
 				local fullPath = folderName .. "/" .. fileName .. ".lua"
 
+				syde.ConfigEnabled = true
+				syde.ConfigFolder = folderName  
+				syde.ConfigFile = fileName     
+
+				-- Ensure folder exists
 				if isfolder and not isfolder(folderName) then
 					local success, err = pcall(function()
 						makefolder(folderName)
 					end)
 					if not success then
-						warn("[SYDE] Failed to create folder:", err)
+						warn("Syde 〡 Failed to create folder:", err)
 					end
 				end
 
+				-- File validation
 				local success, err = pcall(function()
 					if isfile and not isfile(fullPath) then
 						writefile(fullPath, "-- Protected UI Configuration")
 					else
 						local content = readfile(fullPath)
-						if not content:find("Protected UI") then
-							warn("[SYDE] UI integrity failed — possible tampering detected.")
-							if LOADER then LOADER:Destroy() end
-							error("Blocked execution due to tampering.")
-						end
 					end
 				end)
 
 				if not success then
-					warn("[SYDE] File write/read blocked or failed:", err)
+					warn("Syde 〡 File write/read blocked or failed:", err)
 				end
 			end
 
+
 			TweenWorkLabel(1,'rbxassetid://105810189969774', 'Cleaning Things Up...')
-			local UI_TAG = "SYDEUILoader"
+			local UI_TAG = "sydeUILoader"
 			local MARKER_NAME = "SYDEUIDetector"
 			local INTERNAL_UUID = ("SYDE-" .. tostring(game.JobId):gsub("-", "") .. tostring(tick())):gsub("%.", "")
 			local PROTECTION_EVENT = Instance.new("BindableEvent")
@@ -916,7 +991,7 @@ do
 			end)
 
 			if not successLibrary or not Library then
-				warn("[SYDE] Failed to load Library.")
+				warn("Syde 〡 Failed to load Library.")
 				return
 			end
 
@@ -937,7 +1012,7 @@ do
 				while Library and Library.Parent do
 					task.wait(1)
 					if Library.Parent ~= coregui then
-						warn("[SYDE] UI moved. Restoring...")
+						warn("Syde 〡 UI moved. Restoring...")
 						pcall(function()
 							Library.Parent = coregui
 						end)
@@ -951,7 +1026,7 @@ do
 					task.wait(2)
 				end
 
-				warn("[SYDE] UI removed. Reinjection in progress...")
+				warn("Syde 〡 UI removed. Reinjection in progress...")
 				local success, lib = pcall(function()
 					return Library -- Replace with GetObjects if needed
 				end)
@@ -977,7 +1052,7 @@ do
 				local inviteCode = discordConfig.Invite
 				local inviteFilePath = discordFolder .. "/" .. inviteCode .. ".txt"
 
-				warn("[SYDE] Discord AutoJoin enabled. Preparing to send invite:", inviteCode)
+				warn("Syde 〡 Discord AutoJoin enabled. Preparing to send invite:", inviteCode)
 
 				-- Ensure folder exists
 				if isfolder and not isfolder(discordFolder) then
@@ -985,15 +1060,15 @@ do
 						makefolder(discordFolder)
 					end)
 					if folderSuccess then
-						print("[SydeUI] Created DiscordInvites folder at:", discordFolder)
+						print("Syde 〡 Created DiscordInvites folder at:", discordFolder)
 					else
-						warn("[SydeUI] Failed to create DiscordInvites folder:", folderErr)
+						warn("Syde 〡 Failed to create DiscordInvites folder:", folderErr)
 					end
 				end
 
 				local shouldPrompt = true
 				if isfile and discordConfig.RememberJoins and isfile(inviteFilePath) then
-					print("[SYDE] Discord invite '" .. inviteCode .. "' already joined. Skipping prompt.")
+					print("Syde 〡 Discord invite '" .. inviteCode .. "' already joined. Skipping prompt.")
 					shouldPrompt = false
 				end
 
@@ -1018,12 +1093,12 @@ do
 						end)
 
 						if reqSuccess then
-							print("[SydeUI] Discord invite sent successfully to:", inviteCode)
+							print("Syde 〡 Discord invite sent successfully to:", inviteCode)
 						else
-							warn("[SydeUI] Failed to send Discord invite:", reqErr)
+							warn("Syde 〡 Failed to send Discord invite:", reqErr)
 						end
 					else
-						warn("[SydeUI] Request function not available — cannot send Discord invite.")
+						warn("Syde 〡 Request function not available — cannot send Discord invite.")
 					end
 
 					if discordConfig.RememberJoins then
@@ -1032,9 +1107,9 @@ do
 						end)
 
 						if writeSuccess then
-							print("[SydeUI] Logged Discord invite join for:", inviteCode)
+							print("Syde 〡 Logged Discord invite join for:", inviteCode)
 						else
-							warn("[SydeUI] Failed to write join log for invite:", writeErr)
+							warn("Syde 〡 Failed to write join log for invite:", writeErr)
 						end
 					end
 				end
@@ -1042,6 +1117,7 @@ do
 
 			TweenWorkLabel(1,'rbxassetid://136405833725573', 'Loading UI...')
 			task.wait(1)
+			loaded = true
 			tweenservice:Create( LOADER.load.Salt, TweenInfo.new(0.65, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 146,0, 25)}):Play()
 			tweenservice:Create( LOADER.load.Salt.ImageLabel, TweenInfo.new(0.65, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
 		end
@@ -1072,6 +1148,56 @@ do
 
 end
 
+function LoadConfig(Configuration)
+	local Data = https:JSONDecode(Configuration)
+	local changed = false
+
+	for FlagName, Flag in pairs(syde.Flags) do
+		local FlagValue = Data[FlagName]
+
+		if FlagValue ~= nil then
+			task.spawn(function()
+
+				if Flag.Set then
+					Flag:Set(Flag.Type == "ColorPicker" and syde:ColorUnpack(FlagValue) or FlagValue)
+				elseif Flag.Type == "ColorPicker" and Flag.Color then
+					Flag.Color = syde:ColorUnpack(FlagValue)
+					changed = true
+				elseif Flag.Value ~= nil then
+					Flag.Value = FlagValue
+					changed = true
+				elseif Flag.StarterValue then
+					Flag.StarterValue = FlagValue
+				else
+					warn("Syde 〡 Unsupported flag type or missing setter for flag: " .. FlagName)
+				end
+			end)
+		end
+
+	end
+
+	return changed
+end
+
+
+function SaveConfig()
+	if not syde.ConfigEnabled then return end
+
+	local Data = {}
+	for i, v in pairs(syde.Flags) do
+		if v.Type == "ColorPicker" then
+			Data[i] = syde:ColorPack(v.Color)
+		else
+			Data[i] = v.Value or v.Color or v.StarterValue or false
+		end
+	end
+
+	-- Save configuration to file
+	if writefile then
+		local filePath = string.format("%s/%s.lua", syde.ConfigFolder, syde.ConfigFile)
+		writefile(filePath, https:JSONEncode(Data))
+	end
+end
 
 
 -- [UI SETUP]
@@ -1110,7 +1236,7 @@ function SetUserInfo()
 end
 
 function CloseUI()
-	task.wait(0.3)
+	task.wait(0.2)
 	PAGES.Visible = false
 	WINDOW.Tab.Visible = false
 	UIClosed = true
@@ -1135,7 +1261,7 @@ function CloseUI()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Display, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status.TextLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
-	task.wait(0.8)
+	task.wait(0.2)
 	if UIClosed == true then
 		syde:Notify({
 			Title = 'UI Is Closed',
@@ -1189,7 +1315,7 @@ function ToggleUI()
 		end
 	end
 
-	task.delay(1.5, function()
+	task.delay(0.75, function()
 		BOUNCE = false
 	end)
 end
@@ -1204,7 +1330,87 @@ syde:HidePlaceHolder(PAGES, 'Page')
 
 function syde:Init(library)
 
-	UI.Enabled = true
+	Library.Enabled = true
+
+	if loaded == false then
+		local UI_TAG = "sydeUILoader"
+		local MARKER_NAME = "SYDEUIDetector"
+		local INTERNAL_UUID = ("SYDE-" .. tostring(game.JobId):gsub("-", "") .. tostring(tick())):gsub("%.", "")
+		local PROTECTION_EVENT = Instance.new("BindableEvent")
+		local HttpService = game:GetService("HttpService")
+
+		-- Cleanup old UI 
+		local function deepCleanup()
+			for _, v in ipairs(coregui:GetChildren()) do
+				if v:IsA("ScreenGui") and v:FindFirstChild(MARKER_NAME) then
+					pcall(function()
+						v:Destroy()
+					end)
+				end
+			end
+		end
+		deepCleanup()
+
+		-- Load the Library
+		local successLibrary, Library = pcall(function()
+			return Library -- Replace with actual GetObjects if needed
+		end)
+
+		if not successLibrary or not Library then
+			warn("Syde 〡 Failed to load Library.")
+			return
+		end
+
+		Library.Name = UI_TAG
+		Library.ResetOnSpawn = false
+
+		local marker = Instance.new("StringValue")
+		marker.Name = MARKER_NAME
+		marker.Value = INTERNAL_UUID
+		marker.Parent = Library
+
+		pcall(function()
+			Library.Parent = coregui
+		end)
+
+		-- Ensure Library stays in CoreGui
+		task.spawn(function()
+			while Library and Library.Parent do
+				task.wait(1)
+				if Library.Parent ~= coregui then
+					warn("Syde 〡 UI moved. Restoring...")
+					pcall(function()
+						Library.Parent = coregui
+					end)
+				end
+			end
+		end)
+
+		-- Reinject if removed
+		task.spawn(function()
+			while Library and Library.Parent do
+				task.wait(2)
+			end
+
+			warn("Syde 〡 UI removed. Reinjection in progress...")
+			local success, lib = pcall(function()
+				return Library -- Replace with GetObjects if needed
+			end)
+			if success and lib then
+				lib.Name = UI_TAG
+				local m = Instance.new("StringValue")
+				m.Name = MARKER_NAME
+				m.Value = INTERNAL_UUID
+				m.Parent = lib
+				lib.ResetOnSpawn = false
+				pcall(function()
+					lib.Parent = coregui
+				end)
+			end
+		end)
+	end
+
+
 	tweenservice:Create(game.Workspace.Camera, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), { FieldOfView  = 70 }):Play()
 
 	local Data = {
@@ -1223,7 +1429,7 @@ function syde:Init(library)
 	-- [Initial Transparency Setup]
 	TOPBAR.Title.TextTransparency = 1
 	TOPBAR.Title.Sub.TextTransparency = 1
-	
+
 	-- Syde Connection (Coming Soon)
 	SetUserInfo()
 
@@ -1337,7 +1543,7 @@ function syde:Init(library)
 
 	WINDOW.Top.UHolder.Util.Close.interact.MouseButton1Click:Connect(function()
 		syde:Modal({
-			Title = 'Close This UI?',
+			Title = 'Please Confirm You Want To Close This UI',
 			Content = 'Are You Sure You Want To Close This UI?',
 			ConfimCallBack = function()
 				task.wait(1)
@@ -1386,8 +1592,12 @@ function syde:Init(library)
 			end)
 		end
 	end
-	
 
+	syde:AddConnection(syde.Comms.Event, function(p, color)
+		if p == 'DropShadow' then
+			WINDOW.Shadow.ImageLabel.ImageColor3 = color
+		end
+	end)
 
 
 
@@ -1502,10 +1712,10 @@ function syde:Init(library)
 						if ButtonData.CallBack then
 							local success, errorMsg = pcall(ButtonData.CallBack)
 							if not success then
-								warn("[CALLBACK ERROR]:", errorMsg)
+								warn(`[ Button Error: { button.Name } ] Callback Error: { errorMsg }`)
 							end
 						else
-							warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
+							warn(`[ CallBack Missing: { ButtonData.Name } ] No Function Assigned`)
 						end
 					end)
 
@@ -1575,10 +1785,10 @@ function syde:Init(library)
 							if ButtonData.CallBack then
 								local success, errorMsg = pcall(ButtonData.CallBack)
 								if not success then
-									warn("[CALLBACK ERROR]:", errorMsg)
+									warn(`[ Button Error: { button.Name } ] Callback Error: { errorMsg }`)
 								end
 							else
-								warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
+								warn(`[ CallBack Missing: { ButtonData.Name } ] No Function Assigned`)
 							end
 							tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }):Play()
 							tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(0.1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
@@ -1635,9 +1845,9 @@ function syde:Init(library)
 
 
 			end
-			
+
 			---
-			
+
 			function element:TextInput(TextInput, Parent)
 				local TextInputData = {
 					Title = TextInput.Title or "Text Input",
@@ -1711,28 +1921,44 @@ function syde:Init(library)
 
 				end)
 
-				local function ProcessInput()
+				textBox.FocusLost:Connect(function(enterPressed)
+					if not enterPressed then return end
+
 					local success, errorMsg = pcall(function()
 						TextInputData.CallBack(textBox.Text)
 					end)
 					if not success then
 						warn("Error in TextInput callback [" .. textinput.Name .. "]: " .. tostring(errorMsg))
 					end
-				end
 
-				textinput.TextFrame.Enter.MouseButton1Click:Connect(ProcessInput)
-
-				textBox.FocusLost:Connect(function(enterPressed)
-					if enterPressed then
-						ProcessInput()
-					end
 					if TextInputData.ClearOnLost then
-						textBox.Text = ""
-						textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+						task.defer(function()
+							textBox.Text = ""
+							textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+						end)
 					else
 						textBox.ClearTextOnFocus = false
 					end
 				end)
+
+				textinput.TextFrame.Enter.MouseButton1Click:Connect(function()
+					local success, errorMsg = pcall(function()
+						TextInputData.CallBack(textBox.Text)
+					end)
+					if not success then
+						warn("Error in TextInput callback [" .. textinput.Name .. "]: " .. tostring(errorMsg))
+					end
+
+					if TextInputData.ClearOnLost then
+						task.defer(function()
+							textBox.Text = ""
+							textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+						end)
+					else
+						textBox.ClearTextOnFocus = false
+					end
+				end)
+
 			end
 
 			---
@@ -1743,9 +1969,11 @@ function syde:Init(library)
 					Color = ColorPicker.Color;
 					Linkable = ColorPicker.Linkable;
 					CallBack = ColorPicker.CallBack;
+					SFlag = ColorPicker.SFlag;
 				}
 
 				ColorPicker.Linkable = ColorPicker.Linkable or true
+				ColorPickerData.Type = 'ColorPicker'
 
 				local colorpicker = Library.Settings.ColorPicker:Clone()
 				colorpicker.Visible = true
@@ -2299,7 +2527,26 @@ function syde:Init(library)
 					end
 				end
 
+				function ColorPickerData:Set(RGBColor)
+					
+					if typeof(RGBColor) == "table" then
+						RGBColor = Color3.fromRGB(RGBColor.R, RGBColor.G, RGBColor.B)
+					end
+					
+					ColorPickerData.Color = RGBColor
+					
+					local h, s, v = RGBColor:ToHSV()
+					HSV[1], HSV[2], HSV[3] = h, s, v
+					updatestuff()
+				end
+
+				if ColorPickerData.SFlag then
+					syde.SettingsFlags[ColorPickerData.SFlag] = ColorPickerData
+				end
+
 				colorpicker.color.Values.Rainbow.MouseButton1Click:Connect(ToggleRainbowEffect)
+
+				return ColorPickerData
 
 			end
 
@@ -2399,6 +2646,8 @@ function syde:Init(library)
 						Range = Options.Range or {0, 100};
 						StarterValue = Options.StarterValue or 16;
 						CallBack = Options.CallBack;
+						SFlag = Options.SFlag;
+						SettingsConfig = true;
 					}
 
 					Slider.Name = Options.Title
@@ -2455,6 +2704,9 @@ function syde:Init(library)
 							if not success then
 								warn("[CALLBACK ERROR][" .. Slider.Name .. "]: " .. tostring(errorMsg))
 							end
+
+
+							Options.StarterValue = newValue
 						end
 					end
 
@@ -2487,7 +2739,8 @@ function syde:Init(library)
 		Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = syde.theme.HitBox
 		Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = syde.theme.HitBox]]
 					slider.slideholder.Size = UDim2.new(1,-30,0,slider.slideholder.UIListLayout.AbsoluteContentSize.Y)
-					slider.Size = UDim2.new(1,-40,0,slider.slideholder.AbsoluteSize.Y + 25)
+					local ss = slider.slideholder.UIListLayout.AbsoluteContentSize.Y
+					slider.Size = UDim2.new(1,-15,0, ss  + 20)
 
 		--[[syde:AddConnection(syde.Comms.Event, function(p, color)
 			if p == 'HitBox' then
@@ -2497,6 +2750,50 @@ function syde:Init(library)
 				Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = color
 			end
 		end)]]
+
+					function Options:Set(NewVal)
+						local range = Options.Range[2] - Options.Range[1]
+						local sliderPosition = (NewVal - Options.Range[1]) / range
+
+						Slider.slide.slideframe:TweenSize(
+							UDim2.new(sliderPosition, 0, 1, 0),
+							Enum.EasingDirection.Out,
+							Enum.EasingStyle.Quint,
+							0.55,
+							true
+						)
+
+						-- Register load tween
+						syde:registerLoadTween(
+							Slider.slide.slideframe,
+							{Size = UDim2.new(sliderPosition, 0, 1, 0)},
+							{Size = UDim2.new(0, 100, 1, 0)},
+							TweenInfo.new(0.85, Enum.EasingStyle.Quint)
+						) 
+
+						local decimalPlaces = tostring(Options.Increment):match("%.([^0]*)") and #tostring(Options.Increment):match("%.([^0]*)") or 0
+						Slider.v.Text = string.format("<font size='14'>%." .. decimalPlaces .. "f</font><font color='#434343'>/%." .. decimalPlaces .. "f</font>", NewVal, Options.Range[2])
+
+						-- Tween title appearance
+						tweenservice:Create(Slider.Title, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {
+							TextTransparency = 0
+						}):Play()
+
+						-- Callback
+						local success, result = pcall(function()
+							Options.CallBack(NewVal)
+						end)
+						if not success then
+							warn("[CALLBACK ERROR][" .. Slider.Name .. "]: " .. tostring(result))
+						end
+
+						Options.StarterValue = NewVal
+					end
+
+					if Options.SFlag then
+						syde.SettingsFlags[Options.SFlag] = Options
+					end
+
 				end
 
 				--[DESC]
@@ -2547,8 +2844,6 @@ function syde:Init(library)
 					Hold = false;
 					Holding = false
 				}
-
-				print('made keybind')
 
 				local KeyBind = Library.Settings.KeyBind:Clone()
 				KeyBind.Visible = true
@@ -2614,7 +2909,7 @@ function syde:Init(library)
 						local success, result = pcall(KeybindData.CallBack, KeybindData.Key)
 						if not KeybindData.Holding then
 							if not success then
-								warn(`[Keybind: {KeyBind.Name}] Callback Error: {result}`)
+								warn(`[ Keybind: { KeyBind.Name } ] Callback Error: { result }`)
 							end
 						else
 							if KeybindData.Hold then
@@ -2638,9 +2933,11 @@ function syde:Init(library)
 				local ToggleData = {
 					Title = Toggle.Title or "Temp Toggle";
 					Desc = Toggle.Description or "";
-					V = Toggle.Value or false;
+					Value = Toggle.Value or false;
 					Config = Toggle.Config or false;
-					CallBack = Toggle.CallBack
+					CallBack = Toggle.CallBack;
+					SFlag = Toggle.SFlag;
+					SettingsConfig = true;
 				}
 
 				local toggle = Library.Settings.Toggle:Clone()
@@ -2683,21 +2980,22 @@ function syde:Init(library)
 					tweenservice:Create(toggle.tog.gradfr, fadeTween, { BackgroundTransparency = gradientTransparency }):Play()
 				end
 
-				UpdateToggleUI(ToggleData.V)
+				UpdateToggleUI(ToggleData.Value)
 
 				toggle.interact.MouseButton1Click:Connect(function()
-					ToggleData.V = not ToggleData.V
-					UpdateToggleUI(ToggleData.V)
+					ToggleData.Value = not ToggleData.Value
+					UpdateToggleUI(ToggleData.Value)
 
 					local success, errorMsg = pcall(function()
 						if ToggleData.CallBack then
-							ToggleData.CallBack(ToggleData.V)
+							ToggleData.CallBack(ToggleData.Value)
 						end
 					end)
 
 					if not success then
 						warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
 					end
+
 				end)
 
 				--[DESC]
@@ -2856,12 +3154,12 @@ function syde:Init(library)
 
 					userinput.InputBegan:Connect(function(input, processed)
 						if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
-							ToggleData.V = not ToggleData.V
-							UpdateToggleUI(ToggleData.V)
+							ToggleData.Value = not ToggleData.Value
+							UpdateToggleUI(ToggleData.Value)
 
 							if ToggleData.CallBack then
 								local success, errorMsg = pcall(function()
-									ToggleData.CallBack(ToggleData.V)
+									ToggleData.CallBack(ToggleData.Value)
 								end)
 								if not success then
 									warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
@@ -2902,6 +3200,28 @@ function syde:Init(library)
 					end)
 
 				end
+
+				function ToggleData:Set(NewValue)
+
+					ToggleData.Value = NewValue
+					UpdateToggleUI(NewValue)
+
+					local success, errorMsg = pcall(function()
+						if ToggleData.CallBack then
+							ToggleData.CallBack(NewValue)
+						end
+					end)
+
+					if not success then
+						warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+					end
+
+				end
+
+				if ToggleData.SFlag then
+					syde.SettingsFlags[ToggleData.SFlag] = ToggleData
+				end
+
 			end
 
 			return element
@@ -2921,6 +3241,7 @@ function syde:Init(library)
 					['Accent'] = v
 				})
 			end,
+			SFlag = 'AC'
 		}, WINDOW.Settings.Pages.Theme.Container)
 
 
@@ -2933,8 +3254,9 @@ function syde:Init(library)
 					['HitBox'] = c
 				})
 			end,
+			SFlag = 'HB'
 		}, WINDOW.Settings.Pages.Theme.Container)
-		
+
 		element:ColorPicker({
 			Title = 'Drop Shadow',
 			Linkable = true,
@@ -2944,6 +3266,7 @@ function syde:Init(library)
 					['DropShadow'] = c
 				})
 			end,
+			SFlag = 'DS'
 		}, WINDOW.Settings.Pages.Theme.Container)
 
 		element:Section('Other', WINDOW.Settings.Pages.Theme.Container, '0')
@@ -2971,6 +3294,8 @@ function syde:Init(library)
 					CallBack = function(v)
 						tweenservice:Create(WINDOW.Shadow.ImageLabel, TweenInfo.new(0.65, Enum.EasingStyle.Exponential), {ImageTransparency = v}):Play()
 					end,
+					SFlag = 'GDensity',
+					SettingConfig = true,
 				},
 				{
 					Title = 'Drag Smoothness',
@@ -2980,6 +3305,8 @@ function syde:Init(library)
 					CallBack = function(v)
 						dragSpeed = v
 					end,
+					SFlag = 'DSmoothness',
+					SettingConfig = true,
 				},
 			}
 		}, WINDOW.Settings.Pages.Theme.Container)
@@ -2990,19 +3317,100 @@ function syde:Init(library)
 			Value = LockToScreen,
 			CallBack = function (v)
 				LockToScreen = v
-			end
+			end,
+			SFlag = 'LTS',
+			SettingConfig = true,
 		}, WINDOW.Settings.Pages.Theme.Container)
-		
+
+
+		function syde:SaveSettingsConfig()
+			local Data = {}
+
+
+			for flag, v in pairs(syde.SettingsFlags or {}) do
+
+				if v.Type == "ColorPicker" and v.Color then
+					Data[flag] = syde:ColorPack(v.Color)
+				elseif v.Value ~= nil then
+					Data[flag] = v.Value
+				elseif v.StarterValue ~= nil then
+					Data[flag] = v.StarterValue
+				else
+					warn("[DEBUG] Skipping flag", flag, "no valid value found")
+				end
+			end
+
+
+			local path = string.format("%s/SettingsConfig.lua", syde.ConfigFolder)
+			local encoded = https:JSONEncode(Data)
+
+			writefile(path, encoded)
+
+			syde:Notify({
+				Title = 'Settings Saved',
+				Content = 'Your settings have been saved to SettingsConfig.lua',
+				Duration = 3,
+			})
+		end
+
+		function syde:LoadSettingsConfig()
+			local path = string.format("%s/SettingsConfig.lua", syde.ConfigFolder)
+
+			if not isfile(path) then
+				syde:Notify({
+					Title = 'No Settings Found',
+					Content = 'SettingsConfig.lua does not exist.',
+					Duration = 3,
+				})
+				return
+			end
+
+			local success, data = pcall(function()
+				return https:JSONDecode(readfile(path))
+			end)
+
+			if not success or typeof(data) ~= "table" then
+				warn("[DEBUG] Failed to decode settings:", data)
+				return
+			end
+
+			for flag, val in pairs(data) do
+				local setting = syde.SettingsFlags and syde.SettingsFlags[flag]
+				if setting then
+					if setting.Set then
+						setting:Set(val)
+					elseif setting.Type == "ColorPicker" and setting.Color then
+						setting.Color = syde:ColorUnpack(val)
+					elseif setting.Value ~= nil then
+						setting.Value = val
+					end
+				else
+					warn("[DEBUG] No matching setting flag found for:", flag)
+				end
+			end
+
+			syde:Notify({
+				Title = 'Settings Loaded',
+				Content = 'Loaded settings from SettingsConfig.lua.',
+				Duration = 3,
+			})
+		end
+
 		element:CreateButton({
 			Title = 'Save',
 			Description = "Saves Setting Configuration",
 			CallBack = function(v)
-				syde:Notify({
-					Title = 'Saving Coming Soon',
-					Content = 'Saving in Settings Coming Soon'
-				})
+				syde:SaveSettingsConfig()
 			end,
 		},  WINDOW.Settings.Pages.Theme.Container)
+
+		element:CreateButton({
+			Title = 'Load',
+			Description = "Loads Setting Configuration",
+			CallBack = function()
+				syde:LoadSettingsConfig()
+			end,
+		}, WINDOW.Settings.Pages.Theme.Container)
 
 		element:Paragraph({
 			Title = 'Coming Soon',
@@ -3013,7 +3421,7 @@ function syde:Init(library)
 			Title = 'Status',
 			Content = 'Your Up To Date!'
 		}, WINDOW.Settings.Pages.Info.Container)
-		
+
 		element:Toggle({
 			Title = 'Anonymous',
 			Description = 'Hides your info in User Info.',
@@ -3036,7 +3444,8 @@ function syde:Init(library)
 					tweenservice:Create(WINDOW.Tab, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 200,1, -150) }):Play()
 					SetUserInfo()
 				end
-			end
+			end,
+			SFlag = 'Anon'
 		}, WINDOW.Settings.Pages.Privacy.Container)
 		--local startTime = tick()
 
@@ -3403,10 +3812,10 @@ function syde:Init(library)
 					if ButtonData.CallBack then
 						local success, errorMsg = pcall(ButtonData.CallBack)
 						if not success then
-							warn("[CALLBACK ERROR]:", errorMsg)
+							warn(`[ Button Error: { button.Name } ] Callback Error: { errorMsg }`)
 						end
 					else
-						warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
+						warn(`[ CallBack Missing: { button.Name } ] No Function Assigned`)
 					end
 				end)
 
@@ -3542,9 +3951,10 @@ function syde:Init(library)
 			local ToggleData = {
 				Title = Toggle.Title or "Temp Toggle";
 				Desc = Toggle.Description or "";
-				V = Toggle.Value or false;
+				Value = Toggle.Value or false;
 				Config = Toggle.Config or false;
-				CallBack = Toggle.CallBack
+				CallBack = Toggle.CallBack;
+				Flag = Toggle.Flag;
 			}
 
 			local toggle = PAGES.Page.Toggle:Clone()
@@ -3587,21 +3997,24 @@ function syde:Init(library)
 				tweenservice:Create(toggle.tog.gradfr, fadeTween, { BackgroundTransparency = gradientTransparency }):Play()
 			end
 
-			UpdateToggleUI(ToggleData.V)
+			UpdateToggleUI(ToggleData.Value)
 
 			toggle.interact.MouseButton1Click:Connect(function()
-				ToggleData.V = not ToggleData.V
-				UpdateToggleUI(ToggleData.V)
+				ToggleData.Value = not ToggleData.Value
+				UpdateToggleUI(ToggleData.Value)
 
 				local success, errorMsg = pcall(function()
 					if ToggleData.CallBack then
-						ToggleData.CallBack(ToggleData.V)
+						ToggleData.CallBack(ToggleData.Value)
 					end
 				end)
 
 				if not success then
-					warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+					warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
 				end
+
+				SaveConfig()
+
 			end)
 
 			--[DESC]
@@ -3760,16 +4173,18 @@ function syde:Init(library)
 
 				userinput.InputBegan:Connect(function(input, processed)
 					if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
-						ToggleData.V = not ToggleData.V
-						UpdateToggleUI(ToggleData.V)
+						ToggleData.Value = not ToggleData.Value
+						UpdateToggleUI(ToggleData.Value)
 
 						if ToggleData.CallBack then
 							local success, errorMsg = pcall(function()
-								ToggleData.CallBack(ToggleData.V)
+								ToggleData.CallBack(ToggleData.Value)
 							end)
 							if not success then
-								warn("[CALLBACK ERROR][" .. toggle.Name .. "]: " .. tostring(errorMsg))
+								warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
 							end
+
+							SaveConfig()
 						end
 					end
 				end)
@@ -3806,14 +4221,42 @@ function syde:Init(library)
 				end)
 
 			end
-			
+
+			function ToggleData:Set(NewValue)
+
+				ToggleData.Value = NewValue
+				UpdateToggleUI(NewValue)
+
+				local success, errorMsg = pcall(function()
+					if ToggleData.CallBack then
+						ToggleData.CallBack(NewValue)
+					end
+				end)
+
+				if not success then
+					warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
+				end
+
+				SaveConfig()
+			end
+
+			if syde.ConfigEnabled then
+				if ToggleData.Flag then
+					syde.Flags[ToggleData.Flag] = ToggleData
+				end
+			end
+
+
 			syde:AddConnection(syde.Comms.Event, function(p, color)
 				if p == 'HitBox' then
-					if ToggleData.V then
+					if ToggleData.Value then
 						toggle.tog.BackgroundColor3 = color
 					end
 				end
 			end)
+
+			return ToggleData
+
 		end
 
 		function InitElement:CreateSlider(Slider)
@@ -3841,6 +4284,7 @@ function syde:Init(library)
 					Range = Options.Range or {0, 100};
 					StarterValue = Options.StarterValue or 16;
 					CallBack = Options.CallBack;
+					Flag = Options.Flag;
 				}
 
 				Slider.Name = Options.Title
@@ -3861,7 +4305,8 @@ function syde:Init(library)
 				end
 
 
-				Slider.slide.slideframe:TweenSize(UDim2.new(SliderPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
+				--	Slider.slide.slideframe:TweenSize(UDim2.new(SliderPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
+				tweenservice:Create(Slider.slide.slideframe, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(SliderPosition, 0, 1, 0)}):Play()
 
 				syde:registerLoadTween(
 					Slider.slide.slideframe,
@@ -3870,7 +4315,7 @@ function syde:Init(library)
 					TweenInfo.new(0.85, Enum.EasingStyle.Quint)
 				)
 
-				syde:replayLoadTweens(Slider.slide.slideframe)
+				--	syde:replayLoadTweens(Slider.slide.slideframe)
 
 				Slider.v.Text = string.format("<font size='14'>%d</font><font color='#434343'>/%d</font>", Options.StarterValue, Options.Range[2])
 
@@ -3896,7 +4341,6 @@ function syde:Init(library)
 							TweenInfo.new(0.85, Enum.EasingStyle.Quint)
 						)
 
-
 						-- Update the displayed value
 						Slider.v.Text = string.format("<font size='14'>%d</font><font color='#434343'>/%d</font>", newValue, Options.Range[2])
 
@@ -3906,8 +4350,12 @@ function syde:Init(library)
 							Options.CallBack(newValue)
 						end)
 						if not success then
-							warn("[CALLBACK ERROR][" .. Slider.Name .. "]: " .. tostring(errorMsg))
+							warn(`[ Slider Error: { slider.Name } ] Callback Error: { errorMsg }`)
 						end
+
+						Options.StarterValue = newValue
+
+						SaveConfig()
 					end
 				end
 
@@ -3939,7 +4387,8 @@ function syde:Init(library)
 				Slider.slide.slideframe.shadowHolder.penumbraShadow.ImageColor3 = syde.theme.HitBox
 				Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = syde.theme.HitBox
 				slider.slideholder.Size = UDim2.new(1,-30,0,slider.slideholder.UIListLayout.AbsoluteContentSize.Y)
-				slider.Size = UDim2.new(1,-15,0,slider.slideholder.AbsoluteSize.Y + 55)
+				local ss = slider.slideholder.UIListLayout.AbsoluteContentSize.Y
+				slider.Size = UDim2.new(1,-15,0, ss  + 20)
 
 				syde:AddConnection(syde.Comms.Event, function(p, color)
 					if p == 'HitBox' then
@@ -3949,6 +4398,53 @@ function syde:Init(library)
 						Slider.slide.slideframe.shadowHolder.umbraShadow.ImageColor3 = color
 					end
 				end)
+
+				function Options:Set(NewVal)
+					local range = Options.Range[2] - Options.Range[1]
+					local sliderPosition = (NewVal - Options.Range[1]) / range
+
+					Slider.slide.slideframe:TweenSize(
+						UDim2.new(sliderPosition, 0, 1, 0),
+						Enum.EasingDirection.Out,
+						Enum.EasingStyle.Quint,
+						0.55,
+						true
+					)
+
+					-- Register load tween
+					syde:registerLoadTween(
+						Slider.slide.slideframe,
+						{Size = UDim2.new(sliderPosition, 0, 1, 0)},
+						{Size = UDim2.new(0, 100, 1, 0)},
+						TweenInfo.new(0.85, Enum.EasingStyle.Quint)
+					) 
+
+					-- Update value display
+					Slider.v.Text = string.format("<font size='14'>%d</font><font color='#434343'>/%d</font>", tostring(NewVal), Options.Range[2])
+
+					-- Tween title appearance
+					tweenservice:Create(Slider.Title, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {
+						TextTransparency = 0
+					}):Play()
+
+					-- Callback
+					local success, result = pcall(function()
+						Options.CallBack(NewVal)
+					end)
+					if not success then
+						warn(`[ Slider Error: { slider.Name } ] Callback Error: { result }`)
+					end
+
+					Options.StarterValue = NewVal
+					SaveConfig()
+				end
+
+				if syde.ConfigEnabled then
+					if Options.Flag then
+						syde.Flags[Options.Flag] = Options
+					end
+				end
+
 			end
 
 			--[DESC]
@@ -4128,7 +4624,7 @@ function syde:Init(library)
 				for _, option in ipairs(dropdown.dropHolder.drop.Container:GetChildren()) do
 					if option:IsA("Frame") and option:FindFirstChild("Title") then
 						local optionText = option.Title.Text:lower()
-						local isTemplate = option == Option or option.Name == "Option"
+						local isTemplate = option == option or option.Name == "Option"
 						local shouldShow = not isTemplate and (searchText == "" or optionText:find(searchText, 1, true))
 
 						if shouldShow then
@@ -4308,24 +4804,39 @@ function syde:Init(library)
 
 			end)
 
-			local function ProcessInput()
+			textBox.FocusLost:Connect(function(enterPressed)
+				if not enterPressed then return end
+
 				local success, errorMsg = pcall(function()
 					TextInputData.CallBack(textBox.Text)
 				end)
 				if not success then
-					warn("Error in TextInput callback [" .. textinput.Name .. "]: " .. tostring(errorMsg))
+					warn(`[ TextInput Error: { textinput.Name } ] Callback Error: { errorMsg }`)
 				end
-			end
 
-			textinput.TextFrame.Enter.MouseButton1Click:Connect(ProcessInput)
-
-			textBox.FocusLost:Connect(function(enterPressed)
-				if enterPressed then
-					ProcessInput()
-				end
 				if TextInputData.ClearOnLost then
-					textBox.Text = ""
-					textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+					task.defer(function()
+						textBox.Text = ""
+						textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+					end)
+				else
+					textBox.ClearTextOnFocus = false
+				end
+			end)
+
+			textinput.TextFrame.Enter.MouseButton1Click:Connect(function()
+				local success, errorMsg = pcall(function()
+					TextInputData.CallBack(textBox.Text)
+				end)
+				if not success then
+					warn(`[ TextInput Error: { textinput.Name } ] Callback Error: { errorMsg }`)
+				end
+
+				if TextInputData.ClearOnLost then
+					task.defer(function()
+						textBox.Text = ""
+						textBox.Size = UDim2.new(1, -60, 0, math.max(defaultHeight))
+					end)
 				else
 					textBox.ClearTextOnFocus = false
 				end
@@ -4335,12 +4846,14 @@ function syde:Init(library)
 		function InitElement:ColorPicker(ColorPicker)
 			local ColorPickerData = {
 				Title = ColorPicker.Title;
-				Color = ColorPicker.Color;
+				Color = ColorPicker.Color or Color3.fromRGB(255, 255, 255);
 				Linkable = ColorPicker.Linkable;
 				CallBack = ColorPicker.CallBack;
+				Flag = ColorPicker.Flag;
 			}
 
 			ColorPicker.Linkable = ColorPicker.Linkable or true
+			ColorPickerData.Type = 'ColorPicker'
 
 			local colorpicker = PAGES.Page.ColorPicker:Clone()
 			colorpicker.Visible = true
@@ -4494,6 +5007,8 @@ function syde:Init(library)
 				if ColorPickerData.CallBack then
 					ColorPickerData.CallBack(ColorPickerData.Color)
 				end
+
+				ColorPickerData.Color = ColorPickerData.Color
 			end
 			updatestuff()
 
@@ -4693,6 +5208,7 @@ function syde:Init(library)
 					SV:Disconnect()
 					SV = nil
 					AddRecentColor(ColorPickerData.Color)
+					SaveConfig()
 				end
 			end)
 
@@ -4714,6 +5230,7 @@ function syde:Init(library)
 					HUE:Disconnect()
 					HUE = nil
 					AddRecentColor(ColorPickerData.Color)
+					SaveConfig()
 				end
 			end)
 
@@ -4893,7 +5410,23 @@ function syde:Init(library)
 				end
 			end
 
+			function ColorPickerData:Set(RGBColor)
+				ColorPickerData.Color = RGBColor
+				local h, s, v = RGBColor:ToHSV()
+				HSV[1], HSV[2], HSV[3] = h, s, v
+				updatestuff()
+				SaveConfig()
+			end
+
+			if syde.ConfigEnabled then
+				if ColorPickerData.Flag then
+					syde.Flags[ColorPickerData.Flag] = ColorPickerData
+				end
+			end
+
 			colorpicker.color.Values.Rainbow.MouseButton1Click:Connect(ToggleRainbowEffect)
+
+			return ColorPickerData
 
 		end
 
@@ -4963,7 +5496,7 @@ function syde:Init(library)
 					local success, result = pcall(KeybindData.CallBack)
 					if not KeybindData.Holding then
 						if not success then
-							warn(`[Keybind: {KeyBind.Name}] Callback Error: {result}`)
+							warn(`[ Keybind: {KeyBind.Name} ] Callback Error: { result }`)
 						end
 					else
 						if KeybindData.Hold then
@@ -5107,6 +5640,31 @@ function syde:Init(library)
 
 		end
 
+		function syde:LoadSaveConfig()
+			local notified = false
+			local loaded = false
+
+			if syde.ConfigEnabled then
+				local success, result = pcall(function()
+					local filePath = string.format("%s/%s.lua", syde.ConfigFolder, syde.ConfigFile)
+					if isfile and isfile(filePath) then
+						loaded = LoadConfig(readfile(filePath))
+					end
+				end)
+
+				if success then
+					syde:Notify{
+						Title = 'Loaded Save File',
+						Content = 'Configuration loaded successfully from Save File.',
+						Duration = 3,
+					}
+					print("Configuration loaded successfully from a previous session.")
+				elseif not success then
+					warn("Syde Configurations Error 〡 " .. tostring(result))
+				end
+			end
+		end
+
 		return InitElement
 
 	end
@@ -5114,7 +5672,6 @@ function syde:Init(library)
 	return ldata
 
 end
-
 return syde
 
 
