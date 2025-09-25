@@ -1,3 +1,17 @@
+question-ai-logo
+Upgrade
+managemanage
+managemanage
+useruser
+fullfull
+closeclose
+Chat AI
+Hello! Is there any question I can help you with?
+Which city is known as the “Big Apple” in the United States?
+What is the longest war in American history?
+Ask AI
+logo
+more
 --[[
 
 
@@ -27,6 +41,12 @@ local player =          game:GetService('Players')
 local coregui =         game:GetService("CoreGui")
 local textservice =     game:GetService('TextService')
 
+local screenSize =      workspace.CurrentCamera.ViewportSize
+local isMobile =        userinput.TouchEnabled or (screenSize.X < 1024 and screenSize.Y < 768)
+local dragOffset =        255
+local dragOffsetMobile =  150
+local camera =          workspace.CurrentCamera
+
 local sharedModule = {}
 local resizing = false
 
@@ -47,7 +67,7 @@ local syde = {
 	Connections = {};
 	Comms = Instance.new('BindableEvent');
 	ParentOverride = nil;
-	Build = 'SY2';
+	Build = 'SY3';
 	ConfigEnabled = false;
 	ConfigFolder = 'Syde';
 	ConfigFile = 'Config';
@@ -201,39 +221,50 @@ function syde:MakeResizable(Dragger, Object, MinSize, Callback, LockAspectRatio)
 	local startPosition, startSize = nil, nil
 	local isResizing = false
 
+	-- helper for both mouse and touch
+	local function getInputPos(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			return Vector2.new(input.Position.X, input.Position.Y)
+		else
+			return userInput:GetMouseLocation()
+		end
+	end
+
 	local function onInputBegan(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			isResizing = true
 			resizing = true
-			startPosition = userInput:GetMouseLocation()
+			startPosition = getInputPos(input)
 			startSize = Object.AbsoluteSize
-			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 13,0, 13)}):Play()
+			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 15,0, 15)}):Play()
 		end
 	end
 
 	local function onInputChanged(input)
-		if isResizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local mouse = userInput:GetMouseLocation()
-			local delta = mouse - startPosition
+		if isResizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local mouse = getInputPos(input)
+			if startPosition and mouse then
+				local delta = mouse - startPosition
 
-			local newWidth = math.max(MinSize.X, startSize.X + delta.X)
-			local newHeight = math.max(MinSize.Y, startSize.Y + delta.Y)
+				local newWidth = math.max(MinSize.X, startSize.X + delta.X)
+				local newHeight = math.max(MinSize.Y, startSize.Y + delta.Y)
 
-			if LockAspectRatio then
-				local aspectRatio = startSize.X / startSize.Y
-				newHeight = newWidth / aspectRatio
-			end
+				if LockAspectRatio then
+					local aspectRatio = startSize.X / startSize.Y
+					newHeight = newWidth / aspectRatio
+				end
 
-			Object:TweenSize(
-				UDim2.fromOffset(newWidth, newHeight),
-				Enum.EasingDirection.Out,
-				Enum.EasingStyle.Quint,
-				0.7,
-				true
-			)
+				Object:TweenSize(
+					UDim2.fromOffset(newWidth, newHeight),
+					Enum.EasingDirection.Out,
+					Enum.EasingStyle.Quint,
+					0.7,
+					true
+				)
 
-			if Callback then
-				Callback(Vector2.new(newWidth, newHeight))
+				if Callback then
+					Callback(Vector2.new(newWidth, newHeight))
+				end
 			end
 		end
 	end
@@ -243,14 +274,13 @@ function syde:MakeResizable(Dragger, Object, MinSize, Callback, LockAspectRatio)
 			isResizing = false
 			resizing = false
 			startPosition, startSize = nil, nil
-			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 15,0, 15)}):Play()
+			tweenservice:Create(Library.lib.resize, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 20,0, 20)}):Play()
 		end
 	end
 
 	syde:AddConnection(Dragger.InputBegan, onInputBegan)
 	syde:AddConnection(userInput.InputChanged, onInputChanged)
 	syde:AddConnection(Dragger.InputEnded, onInputEnded)
-
 end
 
 local loadTweens = {}
@@ -389,7 +419,6 @@ function syde:AddDrag(Object, Main, ConstrainToParent)
 		local absX = newPos.X.Offset
 		local absY = newPos.Y.Offset
 
-		-- Adjust clamping bounds to account for anchor point
 		local minX = 0 + (frameSize.X * anchorPoint.X)
 		local maxX = screenSize.X - (frameSize.X * (1 - anchorPoint.X))
 
@@ -402,13 +431,22 @@ function syde:AddDrag(Object, Main, ConstrainToParent)
 		return UDim2.new(0, clampedX, 0, clampedY)
 	end
 
+	local function getInputPos(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			return Vector2.new(input.Position.X, input.Position.Y)
+		else
+			return userInput:GetMouseLocation()
+		end
+	end
+
+
+
 
 	syde:AddConnection(Object.InputBegan, function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
-			startMousePos = userInput:GetMouseLocation()
+			startMousePos = getInputPos(input)
 
-			-- Convert position to Offset only
 			local screenSize = workspace.CurrentCamera.ViewportSize
 			local absX = screenSize.X * Main.Position.X.Scale + Main.Position.X.Offset
 			local absY = screenSize.Y * Main.Position.Y.Scale + Main.Position.Y.Offset
@@ -420,16 +458,18 @@ function syde:AddDrag(Object, Main, ConstrainToParent)
 
 
 	syde:AddConnection(userInput.InputChanged, function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-			local currentMousePos = userInput:GetMouseLocation()
-			local delta = currentMousePos - startMousePos
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local currentMousePos = getInputPos(input)
+			if currentMousePos and startMousePos then
+				local delta = currentMousePos - startMousePos
 
-			local newPos = UDim2.new(
-				startFramePos.X.Scale, startFramePos.X.Offset + delta.X,
-				startFramePos.Y.Scale, startFramePos.Y.Offset + delta.Y
-			)
+				local newPos = UDim2.new(
+					startFramePos.X.Scale, startFramePos.X.Offset + delta.X,
+					startFramePos.Y.Scale, startFramePos.Y.Offset + delta.Y
+				)
 
-			Main:TweenPosition(getConstrainedPosition(newPos), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, dragSpeed, true)
+				Main:TweenPosition(getConstrainedPosition(newPos), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, dragSpeed, true)
+			end
 		end
 	end)
 
@@ -522,9 +562,9 @@ function syde:Modal(Modal)
 			ModalInstance.Buttons.Confirm.Interactable = false
 			tweenservice:Create(ModalInstance, TweenInfo.new(0.75, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 219,0, 147)}):Play()
 			tweenservice:Create(ModalInstance, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Title, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 			tweenservice:Create(ModalInstance.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-			tweenservice:Create(ModalInstance.Content, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+			tweenservice:Create(ModalInstance.Content, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 
 			tweenservice:Create(ModalInstance.Buttons.Confirm, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
 			tweenservice:Create(ModalInstance.Buttons.Confirm.TextLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
@@ -1207,6 +1247,7 @@ local TOPBAR = WINDOW.Top
 local TABS = WINDOW.Tab.ScrollingFrame
 local PAGES = WINDOW.Pages
 local settingsOpen = false
+local pluginsOpen = false
 local UIClosed = false
 local Connected = false
 local UserInfoDisabled = false
@@ -1236,7 +1277,7 @@ function SetUserInfo()
 end
 
 function CloseUI()
-	task.wait(0.2)
+	task.wait(0.3)
 	PAGES.Visible = false
 	WINDOW.Tab.Visible = false
 	UIClosed = true
@@ -1257,11 +1298,12 @@ function CloseUI()
 	tweenservice:Create(WINDOW.Top.UHolder.Frame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.UIStroke, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Transparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 1 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Username, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Display, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status.TextLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
-	task.wait(0.2)
+	task.wait(0.8)
 	if UIClosed == true then
 		syde:Notify({
 			Title = 'UI Is Closed',
@@ -1295,6 +1337,7 @@ function OpenUI()
 	tweenservice:Create(WINDOW.Top.UHolder.Frame, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.UIStroke, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Transparency = 0 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 0 }):Play()
+	tweenservice:Create(WINDOW.UserInfo.ImageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Username, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ImageLabel.text.Display, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0 }):Play()
 	tweenservice:Create(WINDOW.UserInfo.ConnectionStatus.Status, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0 }):Play()
@@ -1315,7 +1358,7 @@ function ToggleUI()
 		end
 	end
 
-	task.delay(0.75, function()
+	task.delay(0.4, function()
 		BOUNCE = false
 	end)
 end
@@ -1429,6 +1472,34 @@ function syde:Init(library)
 	-- [Initial Transparency Setup]
 	TOPBAR.Title.TextTransparency = 1
 	TOPBAR.Title.Sub.TextTransparency = 1
+	
+	function applyLayout(isMobile)
+		Library.lib.Size = isMobile and UDim2.new(0, 543,0, 321) or UDim2.new(0, 715, 0, 575)
+		local shadow = WINDOW:FindFirstChild("Shadow")
+		if shadow then
+			shadow.Visible = not isMobile 
+		end
+	end
+
+
+	local function updateLayout()
+		local screenSize = camera.ViewportSize
+		local mobile = userinput.TouchEnabled -- or (screenSize.X < 1024 and screenSize.Y < 768)
+		applyLayout(mobile)
+	end
+
+
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		screenSize = workspace.CurrentCamera.ViewportSize
+		isMobile = userinput.TouchEnabled  -- or (screenSize.X < 1024 and screenSize.Y < 768)
+		updateLayout()  -- Recompute layout values
+	end)
+
+	updateLayout()
+
+	-- Reapply on resize
+	camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateLayout)
+	userinput:GetPropertyChangedSignal("TouchEnabled"):Connect(updateLayout)
 
 	-- Syde Connection (Coming Soon)
 	SetUserInfo()
@@ -1543,7 +1614,7 @@ function syde:Init(library)
 
 	WINDOW.Top.UHolder.Util.Close.interact.MouseButton1Click:Connect(function()
 		syde:Modal({
-			Title = 'Please Confirm You Want To Close This UI',
+			Title = 'Please Confirm Below.',
 			Content = 'Are You Sure You Want To Close This UI?',
 			ConfimCallBack = function()
 				task.wait(1)
@@ -1592,12 +1663,13 @@ function syde:Init(library)
 			end)
 		end
 	end
-
+	
 	syde:AddConnection(syde.Comms.Event, function(p, color)
 		if p == 'DropShadow' then
 			WINDOW.Shadow.ImageLabel.ImageColor3 = color
 		end
 	end)
+
 
 
 
@@ -2528,13 +2600,13 @@ function syde:Init(library)
 				end
 
 				function ColorPickerData:Set(RGBColor)
-					
+
 					if typeof(RGBColor) == "table" then
 						RGBColor = Color3.fromRGB(RGBColor.R, RGBColor.G, RGBColor.B)
 					end
-					
+
 					ColorPickerData.Color = RGBColor
-					
+
 					local h, s, v = RGBColor:ToHSV()
 					HSV[1], HSV[2], HSV[3] = h, s, v
 					updatestuff()
@@ -3484,6 +3556,7 @@ function syde:Init(library)
 
 	end
 
+
 	-------------------------------
 
 	local ldata = {
@@ -3492,15 +3565,22 @@ function syde:Init(library)
 	}
 
 	--[TAB INITIALIZATION]
-	function ldata:InitTab(Title)
+	function ldata:InitTab(tab)
 		local isFirstTab = not ldata.first 
-
+		
+		local TabData = {
+			Title = tab.Title;
+			Locked = tab.Locked or false;
+			Key = tab.Key;
+		}
+		
+		local LockedFrames = {}
 		--[Tab Setup]
 		local Tab = TABS.Tb:Clone()
 		Tab.Visible = true
 		Tab.Parent = TABS
-		Tab.Title.Text = Title
-		Tab.Name = Title
+		Tab.Title.Text = TabData.Title
+		Tab.Name = TabData.Title
 
 		Tab.Title.TextTransparency = 1
 		Tab.indicator.BackgroundTransparency = 1
@@ -3515,7 +3595,7 @@ function syde:Init(library)
 		local Page = PAGES.Page:Clone()
 		Page.Visible = false
 		Page.Parent = PAGES
-		Page.Name = Title
+		Page.Name = TabData.Title
 
 		local defaultParent = Page 
 
@@ -3545,22 +3625,22 @@ function syde:Init(library)
 		syde:updateLayout(Page, 7)
 
 		local function ChangeName(Name)
-			tweenservice:Create(PAGES.TBName, TweenInfo.new(0), { TextTransparency = PAGES.TBName.TextTransparency }):Play()
-			tweenservice:Create(PAGES.TBName, TweenInfo.new(0), { Position = PAGES.TBName.Position }):Play()
+			tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0), { TextTransparency = PAGES.Clipframe.TBName.TextTransparency }):Play()
+			tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0), { Position = PAGES.Clipframe.TBName.Position }):Play()
 
-			local fadeOut = tweenservice:Create(PAGES.TBName, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), { TextTransparency = 1 })
-			local moveUp = tweenservice:Create(PAGES.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Position = UDim2.new(0, 5, 0, -3) })
+			local fadeOut = tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), { TextTransparency = 1 })
+			local moveUp = tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Position = UDim2.new(0, 5,0.5, -25) })
 
 			fadeOut:Play()
 			moveUp:Play()
 			task.wait(0.2)
 
-			PAGES.TBName.Position = UDim2.new(0, 5, 0, 30)
+			PAGES.Clipframe.TBName.Position = UDim2.new(0, 5,0.5, 25)
 
-			PAGES.TBName.Text = Name
+			PAGES.Clipframe.TBName.Text = Name
 
-			local moveDown = tweenservice:Create(PAGES.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Position = UDim2.new(0, 5, 0, 20) })
-			local fadeIn = tweenservice:Create(PAGES.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { TextTransparency = 0 })
+			local moveDown = tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Position = UDim2.new(0, 5,0.5, 0) })
+			local fadeIn = tweenservice:Create(PAGES.Clipframe.TBName, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { TextTransparency = 0 })
 
 			moveDown:Play()
 			fadeIn:Play()
@@ -3568,9 +3648,9 @@ function syde:Init(library)
 
 
 		if isFirstTab then
-			ChangeName(Title)
+			ChangeName(TabData.Title)
 			Page.Visible = true
-			ldata.first = Title
+			ldata.first = TabData.Title
 		end
 
 
@@ -3582,7 +3662,7 @@ function syde:Init(library)
 			tweenservice:Create(Tab.indicator, TweenInfo.new(1, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0.9 }):Play()
 			tweenservice:Create(Tab.indicator.ImageLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
 		else
-			ldata.first = Title
+			ldata.first = TabData.Title
 			tweenservice:Create(Tab.Title, TweenInfo.new(2, Enum.EasingStyle.Quint), { Size = UDim2.new(1, -10, 1, 0) }):Play()
 			tweenservice:Create(Tab.Title, TweenInfo.new(2, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
 			tweenservice:Create(Tab.indicator, TweenInfo.new(2, Enum.EasingStyle.Exponential), { BackgroundColor3 = syde.theme.Accent }):Play()
@@ -3669,12 +3749,83 @@ function syde:Init(library)
 			task.wait(0.4)
 			WINDOW.dim.Visible = false
 		end
+		
+		local function OpenPlugins()
+
+			WINDOW.Plugins.Visible = true
+			WINDOW.dim.Visible = true
+
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.65, Enum.EasingStyle.Quint), { Position = UDim2.new(0.5, 0,0.5, 0) }):Play()
+			tweenservice:Create(WINDOW.Plugins.Close, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.35, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 500,0, 375) }):Play()
+			tweenservice:Create(WINDOW.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0.3 }):Play()
+			tweenservice:Create(WINDOW.Plugins.Close, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 0 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.void, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {  BackgroundTransparency = 0 }):Play()
+			tweenservice:Create(WINDOW.Plugins.void2, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.void1, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {  BackgroundTransparency = 0 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.void2, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 0 }):Play()
+			tweenservice:Create(WINDOW.Plugins.Shadow.ImageLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 0.86 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 0 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.refresh.interact, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 0 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn.TextLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn.notice, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+			tweenservice:Create(WINDOW.Plugins.TextLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 0 }):Play()
+		end
+
+		local function ClosePlugins()
+
+			print('closed')
+
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.65, Enum.EasingStyle.Quint), { Position = UDim2.new(0.5, 176,0.5, -200) }):Play()
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.35, Enum.EasingStyle.Quint), { Size = UDim2.new(0, 200,0, 110) }):Play()
+
+			tweenservice:Create(WINDOW.dim, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.Close, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.void, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {  BackgroundTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.void2, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.void1, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), {  BackgroundTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.void2, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.Shadow.ImageLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.refresh.interact, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn.TextLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.TextLabel, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.LoadFrame.warn.notice, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+			tweenservice:Create(WINDOW.Plugins.Close, TweenInfo.new(0.73, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+
+			task.wait(0.4)
+			WINDOW.dim.Visible = false
+		end
+		
+		local currentLockedTabData = nil
+		local lockedframe
+
+		if TabData.Locked then
+			lockedframe =  WINDOW.Pages.locked:Clone()
+			lockedframe.Visible = false
+			lockedframe.Parent = WINDOW.Pages.lockedpages
+			lockedframe.Name = TabData.Title
+		end
+
 
 		Tab.interact.MouseButton1Click:Connect(function()
-			if ldata.first == Title then return end 
+			if ldata.first == TabData.Title then return end 
 
 
-			ChangeName(Title)
+			ChangeName(TabData.Title)
 			for _, otherPage in ipairs(PAGES:GetChildren()) do
 				if otherPage:IsA("ScrollingFrame") then
 					otherPage.Visible = false
@@ -3683,7 +3834,25 @@ function syde:Init(library)
 
 
 			Page.Visible = true
-			ldata.first = Title
+			ldata.first = TabData.Title
+			
+			if TabData.Locked == true then
+				if lockedframe and lockedframe.Name == TabData.Title then
+					lockedframe.Visible = true
+					for _, v in pairs(WINDOW.Pages.lockedpages:GetChildren()) do
+						if v.Name ~= TabData.Title then
+							v.Visible = false
+						end
+					end
+				end
+				currentLockedTabData = TabData
+			else
+				for _, v in pairs(WINDOW.Pages.lockedpages:GetChildren()) do
+					if v then
+						v.Visible = false
+					end
+				end
+			end
 
 			syde:replayLoadTweens()
 
@@ -3693,6 +3862,66 @@ function syde:Init(library)
 				end
 			end
 		end)
+		
+		if lockedframe  then
+			local keyInputBox = lockedframe.lockedframe.keyframe.key.TextBox
+			keyInputBox.FocusLost:Connect(function(enterPressed)
+				if not enterPressed or not currentLockedTabData then return end
+
+				local enteredKey = keyInputBox.Text
+				local correctKey = enteredKey == currentLockedTabData.Key
+
+				if correctKey and currentLockedTabData.Locked then
+					local keyFrame = lockedframe.lockedframe.keyframe.key
+					local enterIcon = keyFrame.enter
+
+					tweenservice:Create(enterIcon, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+					task.wait(0.5)
+
+					enterIcon.Image = 'rbxassetid://10709790644'
+					tweenservice:Create(enterIcon, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), { ImageTransparency = 0 }):Play()
+					tweenservice:Create(enterIcon, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), { ImageColor3 = Color3.fromRGB(173, 255, 135) }):Play()
+
+					tweenservice:Create( lockedframe.lockedframe.keyframe.ImageLabel, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+					task.wait(0.4)
+					tweenservice:Create( lockedframe.lockedframe.keyframe.ImageLabel, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { ImageTransparency = 0 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.ImageLabel, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Rotation = -26 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.ImageLabel, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Rotation = -26 }):Play()
+					lockedframe.lockedframe.keyframe.ImageLabel.Image = 'rbxassetid://10747366027'
+					task.wait(2)
+					tweenservice:Create( lockedframe.lockedframe.keyframe.UIScale, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Scale = 0.8 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.ImageLabel, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.Title, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.Description, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
+
+
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key.UIStroke, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { Transparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key.getkey, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), {TextTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key.enter, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { ImageTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key.TextBox, TweenInfo.new(0.2, Enum.EasingStyle.Exponential), { TextTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.keyframe.key.Frame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					--	task.wait(0.3)
+					tweenservice:Create( lockedframe.lockedframe, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe.void, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), { BackgroundTransparency = 1 }):Play()
+					tweenservice:Create( lockedframe.lockedframe, TweenInfo.new(0.5, Enum.EasingStyle.Quint), { Size = UDim2.new(0.069, -25,1, 0) }):Play()
+
+					task.wait(1)
+
+					lockedframe:Destroy()
+					TabData.Locked = false
+				else
+					-- Wrong key wiggle
+					local key = lockedframe.lockedframe.keyframe.key
+					tweenservice:Create(key, TweenInfo.new(0.3, Enum.EasingStyle.Quint), { Position = UDim2.new(0.5, 10, 0, 100) }):Play()
+					task.wait(0.1)
+					tweenservice:Create(key, TweenInfo.new(0.3, Enum.EasingStyle.Quint), { Position = UDim2.new(0.5, -10, 0, 100) }):Play()
+					task.wait(0.1)
+					tweenservice:Create(key, TweenInfo.new(0.3, Enum.EasingStyle.Quint), { Position = UDim2.new(0.5, 0, 0, 100) }):Play()
+				end
+			end)
+		end
 
 		WINDOW.Top.UHolder.Util.Settings.interact.MouseButton1Click:Connect(function()
 			if ldata.first == "Settings" then return end
@@ -3748,6 +3977,56 @@ function syde:Init(library)
 				tweenservice:Create(WINDOW.Top.UHolder.Util.Settings.interact, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0.7}):Play()
 				CloseSettings()
 			end
+		end)
+		
+		WINDOW.Top.UHolder.Util.Plugin.interact.MouseButton1Click:Connect(function()
+			if ldata.first == "Plugins" then return end
+			ldata.previousTab = ldata.first 
+			ldata.first = "Plugins"
+			ChangeName('Plugins')
+
+			if not pluginsOpen then
+				pluginsOpen = true
+				OpenPlugins()
+			end
+
+			tweenservice:Create(WINDOW.Top.UHolder.Util.Plugin.interact, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
+
+			-- Make all tab buttons appear disabled
+			for _, otherTab in ipairs(TABS:GetChildren()) do
+				if otherTab:IsA("Frame") then
+					ApplyTabStyle(otherTab, false) 
+					otherTab.interact.Active = false 
+				end
+			end
+
+		end)
+
+		WINDOW.Plugins.Close.MouseButton1Click:Connect(function()
+			if not ldata.previousTab then return end
+			ldata.first = ldata.previousTab
+			ChangeName(ldata.previousTab)
+
+			-- Restore all normal pages
+			for _, otherPage in ipairs(PAGES:GetChildren()) do
+				if otherPage:IsA("ScrollingFrame") then
+					otherPage.Visible = (otherPage.Name == ldata.previousTab)
+				end
+			end
+
+			for _, otherTab in ipairs(TABS:GetChildren()) do
+				if otherTab:IsA("Frame") then
+					ApplyTabStyle(otherTab, otherTab.Name == ldata.previousTab) 
+					otherTab.interact.Active = true 
+				end
+			end
+
+			if pluginsOpen then
+				pluginsOpen = false
+				tweenservice:Create(WINDOW.Top.UHolder.Util.Plugin.interact, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0.7}):Play()
+				ClosePlugins()
+			end
+
 		end)
 
 		local InitElement = {}
@@ -3809,13 +4088,16 @@ function syde:Init(library)
 				end)
 
 				button.interact.MouseButton1Click:Connect(function()
-					if ButtonData.CallBack then
-						local success, errorMsg = pcall(ButtonData.CallBack)
-						if not success then
-							warn(`[ Button Error: { button.Name } ] Callback Error: { errorMsg }`)
+					if TabData.Locked == false then
+						if ButtonData.CallBack then
+							local success, errorMsg = pcall(ButtonData.CallBack)
+							if not success then
+								warn(`[ Button Error: { button.Name } ] Callback Error: { errorMsg }`)
+
+							end
+						else
+							warn(`[ CallBack Missing: { button.Name } ] No Function Assigned`)
 						end
-					else
-						warn(`[ CallBack Missing: { button.Name } ] No Function Assigned`)
 					end
 				end)
 
@@ -3881,13 +4163,16 @@ function syde:Init(library)
 
 					if TimeLeft <= 0 then
 						Complete = true
-						if ButtonData.CallBack then
-							local success, errorMsg = pcall(ButtonData.CallBack)
-							if not success then
-								warn("[CALLBACK ERROR]:", errorMsg)
+
+						if TabData.Locked == false then
+							if ButtonData.CallBack then
+								local success, errorMsg = pcall(ButtonData.CallBack)
+								if not success then
+									warn("[CALLBACK ERROR]:", errorMsg)
+								end
+							else
+								warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
 							end
-						else
-							warn("[CALLBACK MISSING]: No Function Assigned To", ButtonData.Title)
 						end
 						tweenservice:Create(button, TweenInfo.new(0.34, Enum.EasingStyle.Exponential), { BackgroundColor3 = Color3.fromRGB(24, 24, 24) }):Play()
 						tweenservice:Create(button.UIStroke.UIGradient, TweenInfo.new(0.1, Enum.EasingStyle.Linear), { Offset = Vector2.new(-1, 0) }):Play()
@@ -3986,7 +4271,7 @@ function syde:Init(library)
 			local fadeTween = TweenInfo.new(0.57, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 
 			local function UpdateToggleUI(state)
-				local targetColor = state and syde.theme.HitBox or Color3.fromRGB(20, 20, 20)
+				local targetColor = state and syde.theme.HitBox or Color3.fromRGB(28, 28, 28)
 				local strokeTransparency = state and 1 or 0
 				local checkTransparency = state and 0 or 1
 				local gradientTransparency = state and 0 or 1
@@ -4000,21 +4285,22 @@ function syde:Init(library)
 			UpdateToggleUI(ToggleData.Value)
 
 			toggle.interact.MouseButton1Click:Connect(function()
-				ToggleData.Value = not ToggleData.Value
-				UpdateToggleUI(ToggleData.Value)
+				if TabData.Locked == false then
+					ToggleData.Value = not ToggleData.Value
+					UpdateToggleUI(ToggleData.Value)
 
-				local success, errorMsg = pcall(function()
-					if ToggleData.CallBack then
-						ToggleData.CallBack(ToggleData.Value)
+					local success, errorMsg = pcall(function()
+						if ToggleData.CallBack then
+							ToggleData.CallBack(ToggleData.Value)
+						end
+					end)
+
+					if not success then
+						warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
 					end
-				end)
 
-				if not success then
-					warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
+					SaveConfig()
 				end
-
-				SaveConfig()
-
 			end)
 
 			--[DESC]
@@ -4173,18 +4459,20 @@ function syde:Init(library)
 
 				userinput.InputBegan:Connect(function(input, processed)
 					if not processed and ToggleData.Keybind and ToggleData.KeybindReady and input.KeyCode == ToggleData.Keybind then
-						ToggleData.Value = not ToggleData.Value
-						UpdateToggleUI(ToggleData.Value)
+						if TabData.Locked == false then
+							ToggleData.Value = not ToggleData.Value
+							UpdateToggleUI(ToggleData.Value)
 
-						if ToggleData.CallBack then
-							local success, errorMsg = pcall(function()
-								ToggleData.CallBack(ToggleData.Value)
-							end)
-							if not success then
-								warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
+							if ToggleData.CallBack then
+								local success, errorMsg = pcall(function()
+									ToggleData.CallBack(ToggleData.Value)
+								end)
+								if not success then
+									warn(`[ Toggle Error: { toggle.Name } ] Callback Error: { errorMsg }`)
+								end
+
+								SaveConfig()
 							end
-
-							SaveConfig()
 						end
 					end
 				end)
@@ -4306,7 +4594,7 @@ function syde:Init(library)
 
 
 				--	Slider.slide.slideframe:TweenSize(UDim2.new(SliderPosition, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
-				tweenservice:Create(Slider.slide.slideframe, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(SliderPosition, 0, 1, 0)}):Play()
+				tweenservice:Create(Slider.slide.slideframe, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(SliderPosition, 0, 1, 0)})
 
 				syde:registerLoadTween(
 					Slider.slide.slideframe,
@@ -4345,17 +4633,18 @@ function syde:Init(library)
 						Slider.v.Text = string.format("<font size='14'>%d</font><font color='#434343'>/%d</font>", newValue, Options.Range[2])
 
 						tweenservice:Create(Slider.Title, TweenInfo.new(0.55, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+						if TabData.Locked == false then
+							local success, errorMsg = pcall(function()
+								Options.CallBack(newValue)
+							end)
+							if not success then
+								warn(`[ Slider Error: { slider.Name } ] Callback Error: { errorMsg }`)
+							end
 
-						local success, errorMsg = pcall(function()
-							Options.CallBack(newValue)
-						end)
-						if not success then
-							warn(`[ Slider Error: { slider.Name } ] Callback Error: { errorMsg }`)
+							Options.StarterValue = newValue
+
+							SaveConfig()
 						end
-
-						Options.StarterValue = newValue
-
-						SaveConfig()
 					end
 				end
 
@@ -4368,7 +4657,7 @@ function syde:Init(library)
 				end)
 
 				syde:AddConnection(userinput.InputEnded, function(input, processed)
-					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch  then
 						dragging = false
 						if Slider and Slider:FindFirstChild("Title") then
 							tweenservice:Create(Slider.Title, TweenInfo.new( 0.5, Enum.EasingStyle.Exponential ), { TextTransparency = 0.6 }):Play()
@@ -4377,7 +4666,7 @@ function syde:Init(library)
 				end)
 
 				syde:AddConnection(userinput.InputChanged, function(input)
-					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch  then
 						UpdateSlider(input.Position.X)
 					end
 				end)
@@ -4631,13 +4920,13 @@ function syde:Init(library)
 							option.Visible = true
 							if SelectedOptions[option.Title.Text] then
 								tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(31, 31, 31)}):Play()
+								tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(39, 39, 39)}):Play()
 								tweenservice:Create(option.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 								tweenservice:Create(option.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								tweenservice:Create(option.ImageLabel, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
 							else
 								tweenservice:Create(option, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								tweenservice:Create(option, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(22, 22, 22)}):Play()
+								tweenservice:Create(option, TweenInfo.new(1, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(33, 33, 33)}):Play()
 								tweenservice:Create(option.Title, TweenInfo.new(1, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 								tweenservice:Create(option.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
 								tweenservice:Create(option.ImageLabel, TweenInfo.new(1, Enum.EasingStyle.Exponential), {ImageTransparency = 0.9}):Play()
@@ -4645,7 +4934,7 @@ function syde:Init(library)
 						else
 							-- Hide with animation, but wait before setting Visible = false
 							tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-							tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(22, 22, 22)}):Play()
+							tweenservice:Create(option, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(33, 33, 33)}):Play()
 							tweenservice:Create(option.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 							tweenservice:Create(option.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							tweenservice:Create(option.ImageLabel, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
@@ -4674,7 +4963,7 @@ function syde:Init(library)
 						SelectedOptions = {[OptionText] = true}
 						SelectedOrder = {OptionText}
 
-						tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(31, 31, 31)}):Play()
+						tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(39, 39, 39)}):Play()
 						tweenservice:Create(option.ImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 					end
 
@@ -4682,11 +4971,11 @@ function syde:Init(library)
 						if DropdownData.Multi then
 							if SelectedOptions[OptionText] then
 								RemoveFromSelected(OptionText)
-								tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(22, 22, 22)}):Play()
+								tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(33, 33, 33)}):Play()
 								tweenservice:Create(option.ImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0.9}):Play()
 							else
 								AddToSelected(OptionText)
-								tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(24, 24, 24)}):Play()
+								tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(39, 39, 39)}):Play()
 								tweenservice:Create(option.ImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 							end
 						else
@@ -4697,26 +4986,31 @@ function syde:Init(library)
 
 							for _, opt in ipairs(dropdown.dropHolder.drop.Container:GetChildren()) do
 								if opt:IsA("Frame") then
-									tweenservice:Create(opt, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(22, 22, 22)}):Play()
+									tweenservice:Create(opt, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(33, 33, 33)}):Play()
 									tweenservice:Create(opt.ImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0.9}):Play()
 								end
 							end
 
-							tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(24, 24, 24)}):Play()
+							tweenservice:Create(option, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(39, 39, 39)}):Play()
 							tweenservice:Create(option.ImageLabel, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
-
-							if DropdownData.CallBack then
-								DropdownData.CallBack(OptionText)
+							
+							if TabData.Locked == false then
+								if DropdownData.CallBack then
+									DropdownData.CallBack(OptionText)
+								end
 							end
-
+					
 							CloseDrop()
 						end
 
 						UpdateSelectedText()
-
-						if DropdownData.Multi and DropdownData.CallBack then
-							DropdownData.CallBack(SelectedOrder)
+						
+						if TabData == false then
+							if DropdownData.Multi and DropdownData.CallBack then
+								DropdownData.CallBack(SelectedOrder)
+							end
 						end
+						
 					end)
 				end
 
@@ -5580,6 +5874,292 @@ function syde:Init(library)
 
 			Para.Content:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
 		end
+		
+
+		function InitElement:EnchancedView(View)
+			local Viewdata = {
+				Title = View.Title or "3D View",
+				Object = View.Object,
+				UserRotate = View.UserRotate or false,
+				AutoRotate = View.AutoRotate ~= false -- default true
+			}
+
+			local EnchancedView = PAGES.Page["3DView"]:Clone()
+			EnchancedView.Visible = true
+			EnchancedView.Parent = Page
+			EnchancedView.Title.Text = Viewdata.Title
+
+			local Viewport = EnchancedView.ViewFrame.ViewportFrame
+			local Camera = Instance.new("Camera")
+			Camera.Parent = Viewport
+			Viewport.CurrentCamera = Camera
+
+			-- Clone the object
+			local ObjectClone = Viewdata.Object:Clone()
+			ObjectClone.Parent = Viewport
+
+			-- Center object
+			-- Center object properly so pivot is in the middle from the start
+			if ObjectClone:IsA("Model") then
+				ObjectClone:PivotTo(CFrame.new(0, 0, 0))
+			else
+				ObjectClone.CFrame = CFrame.new(0, 0, 0)
+			end
+
+			-- Anchor parts
+			if ObjectClone:IsA("BasePart") then
+				ObjectClone.Anchored = true
+			elseif ObjectClone:IsA("Model") then
+				for _, part in ipairs(ObjectClone:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.Anchored = true
+					end
+				end
+			end
+
+			if Viewdata.UserRotate == false then
+				tweenservice:Create(EnchancedView.ViewFrame.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+					ImageTransparency = 1
+				}):Play()
+			end
+
+			-- Determine center & size
+			local primaryPart
+			local size
+			local center
+
+			if ObjectClone:IsA("BasePart") then
+				size = ObjectClone.Size
+				ObjectClone.CFrame = CFrame.new(0, 0, 0)
+
+			elseif ObjectClone:IsA("Model") then
+				-- Get bounding box center and size
+				local cf, boundsSize = ObjectClone:GetBoundingBox()
+				size = boundsSize
+
+				-- Move model so its center is at (0,0,0)
+				ObjectClone:PivotTo(CFrame.new(0, 0, 0))
+
+				-- Ensure Roblox finishes recalculating bounds after clone
+				task.defer(function()
+					ObjectClone:PivotTo(CFrame.new(0, 0, 0))
+				end)
+			end
+
+
+			-- Camera distance based on size
+			local maxDimension = math.max(size.X, size.Y, size.Z)
+			local distance = maxDimension * 2
+			Camera.CFrame = CFrame.new(Vector3.new(0, 0, distance), Vector3.new(0, 0, 0))
+
+			-- Icon Rotation state
+			local icon = EnchancedView.ViewFrame.ImageLabel
+
+
+			-- Rotation state
+			local targetRotationX, targetRotationY = 0, 0
+			local currentRotationX, currentRotationY = 0, 0
+
+			local dragging = false
+			local dragStartPos
+			local lastPos
+
+			task.spawn(function()
+				while EnchancedView.Parent do
+					currentRotationX += (targetRotationX - currentRotationX) * 0.15
+					currentRotationY += (targetRotationY - currentRotationY) * 0.15
+
+					local rotationCFrame = CFrame.Angles(currentRotationX, currentRotationY, 0)
+					if ObjectClone:IsA("Model") then
+						ObjectClone:PivotTo(rotationCFrame)
+					else
+						ObjectClone.CFrame = rotationCFrame
+					end
+					task.wait(0.016)
+				end
+			end)
+
+			-- Auto rotate (horizontal only so it looks natural)
+			if Viewdata.AutoRotate then
+				task.spawn(function()
+					while EnchancedView.Parent do
+						if not Viewdata.UserRotate or not dragging then
+							targetRotationY = targetRotationY + math.rad(0.5)
+
+						end
+						task.wait(0.01)
+					end
+				end)
+			end
+
+
+			if Viewdata.UserRotate == true then
+				Viewport.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						dragging = true
+						lastPos = input.Position
+						dragStartPos = input.Position -- store where drag started
+
+						tweenservice:Create(icon, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+							ImageColor3 = Color3.fromRGB(255, 255, 255)
+						}):Play()
+					end
+				end)
+
+				Viewport.InputEnded:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						dragging = false
+						tweenservice:Create(icon, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {
+							ImageColor3 = Color3.fromRGB(30, 30, 30)
+						}):Play()
+					end
+				end)
+
+				Viewport.InputChanged:Connect(function(input)
+					if dragging and input.UserInputType == Enum.UserInputType.MouseMovement  then
+						local delta = input.Position - lastPos
+
+						-- Apply rotation
+						targetRotationY = targetRotationY + delta.X * 0.005
+						targetRotationX = math.clamp(targetRotationX - delta.Y * 0.005, -math.pi/2, math.pi/2)
+
+
+						lastPos = input.Position
+					end
+				end)
+			end
+
+
+			-- === Zoom + Elastic Scroll (virtual vs visual) ===
+			local ZoomFrame   = EnchancedView.ViewFrame.Zoom
+			local ClipFrame   = ZoomFrame.clipframe
+			local ScrollFrame = ClipFrame.scroll
+			local ZoomAmountLabel = ZoomFrame.Frame.ZoomAmount -- << change to your label path
+
+			-- Zoom range (studs)
+			local minZoomDistance = maxDimension * 0.5
+			local maxZoomDistance = maxDimension * 10
+
+			-- Elastic settings
+			local elasticity   = 0.4      -- visual resistance (0..1)
+			local maxOverdrag  = 50       -- px visual overdrag cap
+			local tweenInfo    = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+			-- Limits (top is 0, bottom is negative if scroll is taller than clip)
+			local function getScrollLimits()
+				local minY = 0
+				local diff = ScrollFrame.AbsoluteSize.Y - ClipFrame.AbsoluteSize.Y
+				local maxY = diff > 0 and -diff or 0
+				return minY, maxY
+			end
+
+			-- Map Y -> zoom (defensive if no range)
+			local function yToZoom(y)
+				local minY, maxY = getScrollLimits()
+				if minY == maxY then
+					return minZoomDistance
+				end
+				local t = (y - minY) / (maxY - minY) -- 0..1
+				return minZoomDistance + (maxZoomDistance - minZoomDistance) * t
+			end
+
+			local function updateZoom(distance)
+				distance = math.clamp(distance, minZoomDistance, maxZoomDistance)
+				Camera.CFrame = CFrame.new(Vector3.new(0, 0, distance), Vector3.new(0, 0, 0))
+				if ZoomAmountLabel then
+					tweenservice:Create(ZoomAmountLabel, TweenInfo.new(0.8, Enum.EasingStyle.Elastic), {Position = UDim2.new(1, 0,0.5, -20)}):Play()
+					task.wait(0.045)
+					ZoomAmountLabel.Text = 'x'..string.format("%.2f", distance)
+					ZoomAmountLabel.Position = UDim2.new(1, 0,0.5, 20)
+					tweenservice:Create(ZoomAmountLabel, TweenInfo.new(0.8, Enum.EasingStyle.Elastic), {Position = UDim2.new(1, 0,0.5, 0)}):Play()
+				end
+			end
+
+
+
+			local function visualYFromVirtualY(vy)
+				local minY, maxY = getScrollLimits()
+				if vy > minY then
+					local over = vy - minY
+					return math.min(minY + over * elasticity, minY + maxOverdrag)
+				elseif vy < maxY then
+					local over = vy - maxY -- negative
+					return math.max(maxY + over * elasticity, maxY - maxOverdrag)
+				else
+					return vy
+				end
+			end
+
+			-- State
+			local dragging   = false
+			local lastPos
+			local virtualY   = 0 
+
+			-- Initialize virtual to current
+			virtualY = ScrollFrame.Position.Y.Offset
+
+			local initialZoom = 20
+			updateZoom(initialZoom)
+
+			-- Sync scroll position with initial zoom
+			local minY, maxY = getScrollLimits()
+			local t = (initialZoom - minZoomDistance) / (maxZoomDistance - minZoomDistance)
+			local startY = minY + (maxY - minY) * t
+			virtualY = startY
+			ScrollFrame.Position = UDim2.new(ScrollFrame.Position.X.Scale, ScrollFrame.Position.X.Offset, 0, startY)
+
+			if ZoomAmountLabel then
+				ZoomAmountLabel.Text = string.format("%.2f", distance)
+			end
+
+			ZoomFrame.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = true
+					lastPos = input.Position
+				end
+			end)
+
+			ZoomFrame.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = false
+
+					-- Clamp virtual to limits and snap visually
+					local minY, maxY = getScrollLimits()
+					virtualY = math.clamp(virtualY, maxY, minY)
+
+					game:GetService("TweenService"):Create(
+						ScrollFrame,
+						tweenInfo,
+						{ Position = UDim2.new(ScrollFrame.Position.X.Scale, ScrollFrame.Position.X.Offset, 0, virtualY) }
+					):Play()
+
+					-- Keep zoom in sync with the snapped position
+					local distance = yToZoom(virtualY)
+					updateZoom(distance)
+				end
+			end)
+
+			ZoomFrame.InputChanged:Connect(function(input)
+				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+					local deltaY = input.Position.Y - lastPos.Y
+					lastPos = input.Position
+
+					-- 1) Update virtual Y with full delta (no elasticity here)
+					virtualY = virtualY + deltaY
+
+					-- 2) Visual Y with elasticity (so it rubber-bands)
+					local visualY = visualYFromVirtualY(virtualY)
+					ScrollFrame.Position = UDim2.new(ScrollFrame.Position.X.Scale, ScrollFrame.Position.X.Offset, 0, visualY)
+
+					-- 3) Zoom uses CLAMPED virtual Y (so overdrag doesn't affect zoom)
+					local minY, maxY = getScrollLimits()
+					local clampedY = math.clamp(virtualY, maxY, minY)
+					local distance = yToZoom(clampedY)
+					updateZoom(distance)
+				end
+			end)
+
+		end
 
 		function InitElement:Rate(Rate)
 			local RateData = {
@@ -5673,6 +6253,3 @@ function syde:Init(library)
 
 end
 return syde
-
-
-
