@@ -1,4 +1,3 @@
-
 --[[
 
 
@@ -5821,7 +5820,15 @@ function syde:Init(library)
 			elseif Alignment == 'Right' then
 				Label.Text.TextXAlignment = Enum.TextXAlignment.Right
 			end
-
+			
+			local labelSettings = {}
+			
+			function labelSettings:Set(text)
+				Label.Text.Text = text
+			end
+			
+			return labelSettings
+			
 		end
 
 		function InitElement:Paragraph(Paragraph)
@@ -5860,6 +5867,17 @@ function syde:Init(library)
 			updateSize()
 
 			Para.Content:GetPropertyChangedSignal("TextBounds"):Connect(updateSize)
+			
+			local ParagraphSettings = {}
+
+			function ParagraphSettings:Set(title, text)
+				Para.Title.Text = title
+				Para.Content.Text = text
+			end
+
+			ParagraphSettings.Instance = Para
+
+			return ParagraphSettings
 		end
 		
 
@@ -6240,3 +6258,6 @@ function syde:Init(library)
 
 end
 return syde
+
+
+
