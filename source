@@ -36,7 +36,7 @@ local camera =          workspace.CurrentCamera
 local sharedModule = {}
 local resizing = false
 
-local Loader =          game:GetObjects("rbxassetid://110221114597158")[1]
+local Loader =          game:GetObjects("rbxassetid://113098578731369")[1]
 local Library =         game:GetObjects("rbxassetid://123800669522471")[1]
 
 Library.Enabled = false
@@ -694,7 +694,7 @@ do
 
 		local LoaderConfig = {
 			Name = Config.Name;
-			Logo = 'rbxassetid://'..Config.Logo;
+			Logo = 'rbxassetid://102414686536944';
 			ConfigFolder = Config.ConfigFolder;
 			Status = Config.Status;
 			Accent = Config.Accent or syde.theme.Accent;
@@ -915,8 +915,7 @@ do
 		LOADER.load.info.build.Text = syde.Build
 
 		if LoaderConfig.Status == false then
-			LOADER.load.logo.stroke.UIStroke.Color = Color3.fromRGB(24, 24, 24)
-			LOADER.load.logo["Title/Status"].Text = 'Jannis Hub'
+			LOADER.load.logo["Title/Status"].Text = 'IceWare'
 		end
 
 		local statusColors = {
@@ -928,7 +927,6 @@ do
 
 		local statusData = statusColors[LoaderConfig.Status]
 		if statusData then
-			LOADER.load.logo.stroke.UIStroke.Color = statusData.Color
 			LOADER.load.logo["Title/Status"].Text = string.format('%s  <font color="#363636">•</font>  %s', LoaderConfig.Name, statusData.Text)
 		end
 
@@ -6258,6 +6256,5 @@ function syde:Init(library)
 
 end
 return syde
-
 
 
