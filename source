@@ -694,7 +694,7 @@ do
 
 		local LoaderConfig = {
 			Name = Config.Name;
-			Logo = 'rbxassetid://'..Config.Logo;
+			Logo = 'rbxassetid://102414686536944';
 			ConfigFolder = Config.ConfigFolder;
 			Status = Config.Status;
 			Accent = Config.Accent or syde.theme.Accent;
