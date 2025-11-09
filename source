@@ -6250,6 +6250,198 @@ function syde:Init(library)
 			end
 		end
 
+
+		-- this part is extremly pasted sob
+		function InitElement:OpenButton(OpenButtonConfig)
+			local OpenButtonData = {
+				Title = OpenButtonConfig.Title or Data.Title or "Open UI",
+				Enabled = OpenButtonConfig.Enabled ~= false,
+				Position = OpenButtonConfig.Position or UDim2.new(0.5, 0, 0, 6+44/2),
+				OnlyIcon = OpenButtonConfig.OnlyIcon or false,
+				Draggable = OpenButtonConfig.Draggable ~= false,
+				OnlyMobile = OpenButtonConfig.OnlyMobile,
+				CornerRadius = OpenButtonConfig.CornerRadius or UDim.new(1, 0),
+				StrokeThickness = OpenButtonConfig.StrokeThickness or 1,
+				Color = OpenButtonConfig.Color,
+				UIPadding = OpenButtonConfig.UIPadding or 8,
+			}
+
+			local Icon
+
+			local Title = Instance.new("TextLabel")
+			Title.Text = OpenButtonData.Title
+			Title.TextSize = TOPBAR.Title.TextSize + 2
+			Title.Font = TOPBAR.Title.Font
+			Title.FontFace = TOPBAR.Title.FontFace
+			Title.BackgroundTransparency = 1
+			Title.TextColor3 = TOPBAR.Title.TextColor3
+			Title.TextTransparency = 0
+			Title.AutomaticSize = Enum.AutomaticSize.XY
+			Title.ZIndex = 100
+
+			local Drag = Instance.new("TextButton")
+			Drag.Size = UDim2.new(0, 44-8, 0, 44-8)
+			Drag.BackgroundTransparency = 1
+			Drag.Name = "Drag"
+			Drag.Active = true
+			Drag.Text = ""
+			Drag.Visible = false
+
+			local Divider = Instance.new("Frame")
+			Divider.Size = UDim2.new(0, 1, 1, 0)
+			Divider.Position = UDim2.new(0, 20+16, 0.5, 0)
+			Divider.AnchorPoint = Vector2.new(0, 0.5)
+			Divider.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+			Divider.BackgroundTransparency = 0.9
+
+			local Container = Instance.new("Frame")
+			Container.Size = UDim2.new(0, 200, 0, 44)
+			Container.Position = OpenButtonData.Position
+			Container.AnchorPoint = Vector2.new(0.5, 0.5)
+			Container.Parent = Library
+			Container.BackgroundTransparency = 1
+			Container.Active = true
+			Container.Visible = OpenButtonData.Enabled
+
+			local Button = Instance.new("TextButton")
+			Button.Size = UDim2.new(0, 0, 0, 44)
+			Button.AutomaticSize = Enum.AutomaticSize.X
+			Button.Parent = Container
+			Button.Active = true
+			Button.BackgroundTransparency = 0.25
+			Button.ZIndex = 99
+			Button.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+			Button.Text = ""
+
+			local ButtonCorner = Instance.new("UICorner")
+			ButtonCorner.CornerRadius = OpenButtonData.CornerRadius
+			ButtonCorner.Parent = Button
+
+			local ButtonStroke = Instance.new("UIStroke")
+			ButtonStroke.Thickness = OpenButtonData.StrokeThickness
+			ButtonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			ButtonStroke.Color = Color3.new(1, 1, 1)
+			ButtonStroke.Transparency = 0
+			ButtonStroke.Parent = Button
+
+			local ButtonGradient = Instance.new("UIGradient")
+			local useCustomColor = OpenButtonData.Color ~= nil
+			local hitBoxColor = syde.theme.HitBox
+			if useCustomColor then
+				ButtonGradient.Color = OpenButtonData.Color
+			else
+				ButtonGradient.Color = ColorSequence.new(hitBoxColor, hitBoxColor)
+			end
+			ButtonGradient.Parent = ButtonStroke
+			
+			syde:AddConnection(syde.Comms.Event, function(p, color)
+				if p == 'HitBox' and not useCustomColor then
+					ButtonGradient.Color = ColorSequence.new(color, color)
+				end
+			end)
+
+			local ButtonListLayout = Instance.new("UIListLayout")
+			ButtonListLayout.Padding = UDim.new(0, 4)
+			ButtonListLayout.FillDirection = Enum.FillDirection.Horizontal
+			ButtonListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			ButtonListLayout.Parent = Button
+
+			local TextButton = Instance.new("TextButton")
+			TextButton.AutomaticSize = Enum.AutomaticSize.XY
+			TextButton.Active = true
+			TextButton.BackgroundTransparency = 1
+			TextButton.Size = UDim2.new(0, 0, 0, 44-(4*2))
+			TextButton.BackgroundColor3 = Color3.new(1, 1, 1)
+			TextButton.Name = "TextButton"
+			TextButton.Text = ""
+			TextButton.ZIndex = 100
+			TextButton.Parent = Button
+
+			local TextButtonCorner = Instance.new("UICorner")
+			TextButtonCorner.CornerRadius = UDim.new(OpenButtonData.CornerRadius.Scale, OpenButtonData.CornerRadius.Offset-4)
+			TextButtonCorner.Parent = TextButton
+
+			local TextButtonListLayout = Instance.new("UIListLayout")
+			TextButtonListLayout.Padding = UDim.new(0, OpenButtonData.UIPadding)
+			TextButtonListLayout.FillDirection = Enum.FillDirection.Horizontal
+			TextButtonListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			TextButtonListLayout.Parent = TextButton
+
+			local TextButtonPadding = Instance.new("UIPadding")
+			TextButtonPadding.PaddingLeft = UDim.new(0, 7+4)
+			TextButtonPadding.PaddingRight = UDim.new(0, 7+4)
+			TextButtonPadding.Parent = TextButton
+
+			Title.Parent = TextButton
+			Divider.Parent = Button
+
+			local ButtonPadding = Instance.new("UIPadding")
+			ButtonPadding.PaddingLeft = UDim.new(0, 4)
+			ButtonPadding.PaddingRight = UDim.new(0, 4)
+			ButtonPadding.Parent = Button
+
+			if OpenButtonData.OnlyIcon then
+				Title.Visible = false
+				TextButtonPadding.PaddingLeft = UDim.new(0, 7)
+				TextButtonPadding.PaddingRight = UDim.new(0, 7)
+			end
+
+			Divider.Visible = false
+
+			-- Button:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			-- 	Container.Size = UDim2.new(0, Button.AbsoluteSize.X, 0, Button.AbsoluteSize.Y)
+			-- end)
+
+
+
+			local function handleClick()
+				ToggleUI()
+			end
+			
+			TextButton.MouseButton1Click:Connect(handleClick)
+			Button.MouseButton1Click:Connect(handleClick)
+
+			local OpenButtonMain = {
+				Button = Button,
+				Container = Container,
+				Visible = function(self, v)
+					Container.Visible = v
+				end,
+				Edit = function(self, config)
+					if config.Title then
+						Title.Text = config.Title
+					end
+					if config.Position then
+						Container.Position = config.Position
+					end
+					if config.Color then
+						ButtonGradient.Color = config.Color
+					elseif config.UseTheme ~= false then
+						local hitBoxColor = syde.theme.HitBox
+						ButtonGradient.Color = ColorSequence.new(hitBoxColor, hitBoxColor)
+					end
+					if config.OnlyIcon ~= nil then
+						Title.Visible = not config.OnlyIcon
+						if config.OnlyIcon then
+							TextButtonPadding.PaddingLeft = UDim.new(0, 7)
+							TextButtonPadding.PaddingRight = UDim.new(0, 7)
+						else
+							TextButtonPadding.PaddingLeft = UDim.new(0, 7+4)
+							TextButtonPadding.PaddingRight = UDim.new(0, 7+4)
+						end
+					end
+				end
+			}
+
+			return OpenButtonMain
+		end
+
+		InitElement:OpenButton({
+			Title = Data.Title,
+			Icon = Data.Icon,
+			Enabled = true,
+		})
+
 		return InitElement
 
 	end
@@ -6258,5 +6450,3 @@ function syde:Init(library)
 
 end
 return syde
-
-
